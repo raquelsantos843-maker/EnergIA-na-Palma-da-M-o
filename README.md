@@ -7,5 +7,26 @@ O objetivo é permitir que o usuário acompanhe seu consumo, visualize estimativ
 ## Experimente
 🌐 Acessar a aplicação:(https://github.com/raquelsantos843-maker/EnergIA-na-Palma-da-M-o/blob/main/energia_na_palma_da_m_o_prot_tipo_ibc(7).html)
 
+ ## 🚀 Funcionalidades Propostas
+
+Acompanhamento do consumo diário e mensal.
+
+Histórico de consumo de energia.
+
+Estimativa de gastos em reais.
+
+Gráficos e comparações de consumo.
+
+Definição de limite mensal.
+
+Alertas de consumo próximo ao limite.
+
+Assistente virtual com Inteligência Artificial.
+
+Informações sobre bandeiras tarifárias.
+
+## 🌱 Relevância do Projeto
+
+O projeto busca proporcionar maior autonomia às famílias, permitindo acompanhar o consumo de energia na palma da mão, identificar possíveis excessos e evitar surpresas na conta de luz.
 
 
