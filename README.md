@@ -30,6 +30,7 @@ Informações sobre bandeiras tarifárias.
 O projeto busca proporcionar maior autonomia às famílias, permitindo acompanhar o consumo de energia na palma da mão, identificar possíveis excessos e evitar surpresas na conta de luz.
 
 | | |
-|----|----|
+|---|---|
+| 
 
 
