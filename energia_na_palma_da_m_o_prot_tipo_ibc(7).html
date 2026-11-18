@@ -1,0 +1,2674 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EnergIA na Palma da Mão — Protótipo IBC (Manaus-AM, 2026)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Fonte Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Chart.js para gráficos interativos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .tab-active {
+      border-bottom: 3px solid #059669;
+      color: #065f46;
+      background-color: #ecfdf5;
+    }
+    @keyframes pulse-soft {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.55; }
+    }
+    .animate-pulse-soft {
+      animation: pulse-soft 1.8s infinite;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Toast / Caixa de Mensagens (substitui alert/confirm) -->
+  <div id="toastContainer" aria-live="polite" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- ===================================================================== -->
+  <!-- TELA INICIAL: ÁREA DO CLIENTE (LOGIN E CADASTRO DE NOVOS USUÁRIOS)    -->
+  <!-- ===================================================================== -->
+  <div id="authLandingScreen" class="min-h-screen w-full bg-[#f3f7f9] flex flex-col items-center justify-center p-4 sm:p-6">
+    <div class="w-full max-w-[440px] bg-white rounded-3xl shadow-[0_14px_38px_-10px_rgba(15,23,42,0.12)] border border-slate-200/70 overflow-hidden">
+      <!-- Linha superior em degradê horizontal (azul-petróleo -> laranja/âmbar) -->
+      <div class="h-1.5 w-full bg-gradient-to-r from-[#005a70] via-[#0e7490] to-[#f59e0b]"></div>
+
+      <div class="p-6 sm:p-8">
+        <!-- MODO 1: LOGIN (ÁREA DO CLIENTE) -->
+        <div id="authLoginView">
+          <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Área do cliente</h1>
+          <p class="text-sm text-slate-500 mt-1">Entre para pagar contas e acompanhar sua unidade.</p>
+
+          <form id="authLoginForm" onsubmit="handleAuthLogin(event)" class="mt-6 space-y-4" novalidate>
+            <!-- Campo CPF ou CNPJ -->
+            <div>
+              <label for="loginDocInput" class="block text-xs font-bold text-slate-800 mb-1.5">
+                CPF ou CNPJ <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-3.5 flex items-center text-slate-400 pointer-events-none">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </span>
+                <input type="text" id="loginDocInput" maxlength="18" oninput="applyCpfCnpjMask(this)"
+                  placeholder="Digite seu CPF ou CNPJ"
+                  class="w-full rounded-xl border border-slate-300 pl-10 pr-3.5 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#005a70] focus:ring-2 focus:ring-[#005a70]/20 transition" />
+              </div>
+              <p id="loginDocError" class="hidden text-[11px] font-semibold text-red-600 mt-1">Informe um CPF ou CNPJ válido.</p>
+            </div>
+
+            <!-- Campo Senha -->
+            <div>
+              <label for="loginPassInput" class="block text-xs font-bold text-slate-800 mb-1.5">
+                Senha <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-3.5 flex items-center text-slate-400 pointer-events-none">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                  </svg>
+                </span>
+                <input type="password" id="loginPassInput" placeholder="Digite sua senha"
+                  class="w-full rounded-xl border border-slate-300 pl-10 pr-10 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#005a70] focus:ring-2 focus:ring-[#005a70]/20 transition" />
+                <button type="button" onclick="togglePasswordVisibility('loginPassInput', 'loginEyeIcon')" aria-label="Mostrar ou ocultar senha"
+                  class="absolute inset-y-0 right-3 flex items-center text-slate-500 hover:text-slate-800 cursor-pointer">
+                  <svg id="loginEyeIcon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </button>
+              </div>
+              <p id="loginPassError" class="hidden text-[11px] font-semibold text-red-600 mt-1">Digite sua senha para continuar.</p>
+            </div>
+
+            <!-- Esqueci minha senha -->
+            <div class="flex justify-end">
+              <button type="button" onclick="handleForgotPassword()"
+                class="text-xs font-bold text-[#005a70] hover:underline cursor-pointer">
+                Esqueci minha senha
+              </button>
+            </div>
+
+            <!-- Caixa estilo reCAPTCHA -->
+            <div>
+              <div id="loginCaptchaBox" onclick="toggleRecaptcha('login')" role="checkbox" aria-checked="false" tabindex="0"
+                onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleRecaptcha('login');}"
+                class="flex items-center justify-between px-3.5 py-3 rounded-xl border border-slate-300 bg-[#f9fafb] hover:border-slate-400 transition cursor-pointer select-none">
+                <div class="flex items-center gap-3">
+                  <div id="loginCaptchaCheck"
+                    class="w-6 h-6 rounded border-2 border-slate-300 bg-white flex items-center justify-center transition-all">
+                    <svg id="loginCaptchaTick" class="hidden w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span class="text-xs sm:text-sm font-medium text-slate-800">Não sou um robô</span>
+                </div>
+                <div class="flex flex-col items-center text-center leading-none">
+                  <svg class="w-6 h-6 text-[#1c3aa9]" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2a9.99 9.99 0 0 1 8.16 4.21l-2.32 1.64A7.15 7.15 0 0 0 12 4.85c-2.6 0-4.88 1.39-6.13 3.47L8.5 10H2V3.5l2.14 2.14A9.97 9.97 0 0 1 12 2zm0 20a9.99 9.99 0 0 1-8.16-4.21l2.32-1.64A7.15 7.15 0 0 0 12 19.15c2.6 0 4.88-1.39 6.13-3.47L15.5 14H22v6.5l-2.14-2.14A9.97 9.97 0 0 1 12 22z"/>
+                  </svg>
+                  <span class="text-[9px] font-semibold text-slate-500 mt-1">reCAPTCHA</span>
+                </div>
+              </div>
+              <div class="flex justify-end mt-1">
+                <span class="text-[10px] text-slate-400">Privacidade · Termos</span>
+              </div>
+              <p id="loginCaptchaError" class="hidden text-[11px] font-semibold text-red-600 mt-0.5">Marque a caixa "Não sou um robô".</p>
+            </div>
+
+            <!-- Botão Entrar -->
+            <button type="submit"
+              class="w-full bg-[#004766] hover:bg-[#003852] text-white text-sm font-bold py-3.5 rounded-xl shadow-sm flex items-center justify-center gap-2 transition cursor-pointer">
+              <span>Entrar</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </button>
+          </form>
+
+          <!-- Divisor e Botão Criar Conta -->
+          <div class="mt-6 pt-5 border-t border-slate-200/80 text-center">
+            <p class="text-xs text-slate-500 mb-3">Ainda não tem conta?</p>
+            <button type="button" onclick="switchAuthMode('register')"
+              class="w-full bg-white hover:bg-[#f0f7fa] text-[#005a70] border border-[#b8d4e0] text-sm font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+              <span>Criar conta</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- MODO 2: CADASTRO DE NOVO USUÁRIO -->
+        <div id="authRegisterView" class="hidden">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Criar nova conta</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Cadastre-se para acompanhar seu consumo no EnergIA.</p>
+            </div>
+            <span class="text-[10px] font-bold uppercase px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
+              LGPD • IBC
+            </span>
+          </div>
+
+          <form id="authRegisterForm" onsubmit="handleAuthRegister(event)" class="mt-5 space-y-3.5" novalidate>
+            <div>
+              <label for="regUserName" class="block text-xs font-bold text-slate-800 mb-1">
+                Nome Completo ou Pseudônimo <span class="text-red-500">*</span>
+              </label>
+              <input type="text" id="regUserName" placeholder="Ex: Família Silva (protegido pela LGPD)"
+                class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#005a70] focus:ring-2 focus:ring-[#005a70]/20" />
+            </div>
+
+            <div>
+              <label for="regUserDoc" class="block text-xs font-bold text-slate-800 mb-1">
+                CPF ou CNPJ <span class="text-red-500">*</span>
+              </label>
+              <input type="text" id="regUserDoc" maxlength="18" oninput="applyCpfCnpjMask(this)"
+                placeholder="Digite seu CPF ou CNPJ"
+                class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#005a70] focus:ring-2 focus:ring-[#005a70]/20" />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="regUserEmail" class="block text-xs font-bold text-slate-800 mb-1">
+                  E-mail (Opcional)
+                </label>
+                <input type="email" id="regUserEmail" placeholder="voce@email.com"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#005a70] focus:ring-2 focus:ring-[#005a70]/20" />
+              </div>
+              <div>
+                <label for="regUserUtility" class="block text-xs font-bold text-slate-800 mb-1">
+                  Concessionária
+                </label>
+                <input type="text" id="regUserUtility" value="Amazonas Energia"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-[#005a70] focus:ring-2 focus:ring-[#005a70]/20" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="regUserPass" class="block text-xs font-bold text-slate-800 mb-1">
+                  Senha <span class="text-red-500">*</span>
+                </label>
+                <input type="password" id="regUserPass" placeholder="Crie uma senha"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#005a70] focus:ring-2 focus:ring-[#005a70]/20" />
+              </div>
+              <div>
+                <label for="regUserPassConfirm" class="block text-xs font-bold text-slate-800 mb-1">
+                  Confirmar Senha <span class="text-red-500">*</span>
+                </label>
+                <input type="password" id="regUserPassConfirm" placeholder="Repita a senha"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#005a70] focus:ring-2 focus:ring-[#005a70]/20" />
+              </div>
+            </div>
+
+            <!-- Caixa estilo reCAPTCHA no Cadastro -->
+            <div>
+              <div id="registerCaptchaBox" onclick="toggleRecaptcha('register')" role="checkbox" aria-checked="false" tabindex="0"
+                onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleRecaptcha('register');}"
+                class="flex items-center justify-between px-3.5 py-2.5 rounded-xl border border-slate-300 bg-[#f9fafb] hover:border-slate-400 transition cursor-pointer select-none">
+                <div class="flex items-center gap-3">
+                  <div id="registerCaptchaCheck"
+                    class="w-5 h-5 rounded border-2 border-slate-300 bg-white flex items-center justify-center transition-all">
+                    <svg id="registerCaptchaTick" class="hidden w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span class="text-xs font-medium text-slate-800">Não sou um robô</span>
+                </div>
+                <span class="text-[9px] font-semibold text-slate-500">reCAPTCHA</span>
+              </div>
+            </div>
+
+            <button type="submit"
+              class="w-full bg-[#004766] hover:bg-[#003852] text-white text-sm font-bold py-3 rounded-xl shadow-sm flex items-center justify-center gap-2 transition cursor-pointer">
+              <span>Cadastrar e Entrar</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </button>
+
+            <button type="button" onclick="switchAuthMode('login')"
+              class="w-full bg-white hover:bg-slate-50 text-[#005a70] border border-slate-200 text-xs font-bold py-2.5 rounded-xl transition cursor-pointer">
+              Já tenho conta — Voltar ao Login
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- CONTAINER PRINCIPAL DO APLICATIVO ENERGIA NA PALMA DA MÃO             -->
+  <!-- ===================================================================== -->
+  <div id="mainAppWrapper" class="hidden min-h-screen flex flex-col">
+
+  <!-- Menu Sandbar Lateral Retrátil (Gaveta de Navegação + Overlay Escuro) -->
+  <div id="sandbarOverlay" onclick="closeSandbarMenu()" aria-hidden="true"
+    class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 hidden opacity-0 transition-opacity duration-300"></div>
+
+  <aside id="sandbarDrawer" aria-label="Menu lateral de navegação" aria-hidden="true"
+    class="fixed top-0 left-0 h-full w-72 max-w-[85vw] bg-slate-900 text-white z-50 transform -translate-x-full transition-transform duration-300 ease-out shadow-2xl border-r border-slate-800 flex flex-col justify-between">
+    <div>
+      <!-- Cabeçalho do Sandbar -->
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <div>
+            <span class="block text-sm font-extrabold text-white leading-tight">EnergIA</span>
+            <span class="block text-[10px] text-emerald-300 font-medium">Navegação Rápida • IBC</span>
+          </div>
+        </div>
+        <button type="button" onclick="closeSandbarMenu()" aria-label="Fechar menu lateral"
+          class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Perfil Resumido no Sandbar -->
+      <div class="px-4 py-3 bg-slate-800/60 border-b border-slate-800 text-xs">
+        <span class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Unidade Ativa</span>
+        <strong id="sandbarConsumerName" class="block text-emerald-400 truncate mt-0.5">Perfil Padrão (Simulado)</strong>
+      </div>
+
+      <!-- Links de Navegação Sincronizados com as Abas -->
+      <nav class="p-3 space-y-1.5" aria-label="Seções do aplicativo">
+        <button type="button" id="sandbar-btn-dashboard" onclick="navigateFromSandbar('dashboard')"
+          class="sandbar-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-left text-sm font-semibold bg-emerald-600 text-white shadow-sm transition cursor-pointer">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          <span>Painel Principal</span>
+        </button>
+
+        <button type="button" id="sandbar-btn-cadastro" onclick="navigateFromSandbar('cadastro')"
+          class="sandbar-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-left text-sm font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition cursor-pointer">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          <span>Cadastro do Consumidor</span>
+        </button>
+
+        <button type="button" id="sandbar-btn-registro" onclick="navigateFromSandbar('registro')"
+          class="sandbar-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-left text-sm font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition cursor-pointer">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          <span>Registro de Consumo</span>
+        </button>
+
+        <button type="button" id="sandbar-btn-assistente" onclick="navigateFromSandbar('assistente')"
+          class="sandbar-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-left text-sm font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition cursor-pointer">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+          </svg>
+          <span>Assistente Virtual IA</span>
+        </button>
+
+        <button type="button" id="sandbar-btn-questionario" onclick="navigateFromSandbar('questionario')"
+          class="sandbar-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-left text-sm font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition cursor-pointer">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>Questionário (Apêndice A)</span>
+        </button>
+
+        <button type="button" id="sandbar-btn-simulador" onclick="navigateFromSandbar('simulador')"
+          class="sandbar-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-left text-sm font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition cursor-pointer">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          <span>Simulador de Energia</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Rodapé do Sandbar -->
+    <div class="p-4 border-t border-slate-800 text-[11px] text-slate-400 space-y-2.5">
+      <button type="button" onclick="logoutToLanding()"
+        class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-800 hover:bg-red-950/70 text-slate-200 hover:text-red-300 border border-slate-700 hover:border-red-800/60 text-xs font-semibold transition cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+        <span>Sair / Tela Inicial</span>
+      </button>
+      <div>
+        <div class="font-semibold text-slate-300">Protótipo IBC • Manaus-AM</div>
+        <div>Conformidade LGPD (Lei nº 13.709/2018)</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Cabeçalho Institucional & Identidade do Protótipo -->
+  <header class="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 text-white shadow-lg border-b border-emerald-800/60">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex items-start sm:items-center gap-3">
+          <!-- Botão Sandbar (Menu Hambúrguer) -->
+          <button type="button" onclick="openSandbarMenu()" aria-label="Abrir menu de navegação" aria-controls="sandbarDrawer"
+            class="w-11 h-11 rounded-2xl bg-slate-800/90 hover:bg-emerald-600/30 border border-slate-700 hover:border-emerald-400/50 text-white flex items-center justify-center shrink-0 transition cursor-pointer">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
+          <div class="w-11 h-11 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center shrink-0">
+            <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-white">
+                EnergIA na Palma da Mão
+              </h1>
+              <span class="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                Protótipo IBC • 2026
+              </span>
+            </div>
+            <p class="text-xs text-slate-300 mt-0.5">
+              Instituto Benjamin Constant • Curso Técnico em Inteligência Artificial • Manaus-AM
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <div id="headerConsumerBadge" class="text-xs bg-slate-800/90 border border-slate-700 px-3 py-2 rounded-xl text-slate-200">
+            Consumidor: <strong class="text-emerald-400" id="headerConsumerName">Perfil Padrão (Simulado)</strong>
+          </div>
+          <button onclick="switchTab('cadastro')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl transition shadow-sm cursor-pointer">
+            + Cadastro do Consumidor
+          </button>
+          <button type="button" onclick="logoutToLanding()" title="Voltar à tela inicial de login"
+            class="bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold px-3 py-2.5 rounded-xl transition cursor-pointer">
+            Sair
+          </button>
+        </div>
+      </div>
+
+      <!-- Faixa de Transparência Metodológica (Seção 1 & 6 do Projeto) -->
+      <div class="mt-4 bg-amber-500/10 border border-amber-400/30 rounded-xl px-3.5 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-200">
+        <div class="flex items-start sm:items-center gap-2">
+          <span class="font-bold text-amber-400 shrink-0">Transparência Metodológica:</span>
+          <span>
+            Este protótipo opera com <strong>Dados Simulados / Informados pelo Usuário</strong> na ausência de medidor inteligente integrado, em conformidade com a <strong>LGPD (Lei nº 13.709/2018)</strong>.
+          </span>
+        </div>
+        <span class="text-[11px] text-amber-300/90 shrink-0 font-medium">Base Tarifária: R$ <span id="headerTariffDisplay">0,89</span>/kWh</span>
+      </div>
+    </div>
+
+    <!-- Barra de Navegação das Abas -->
+    <nav class="bg-white text-slate-700 border-b border-slate-200 overflow-x-auto">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-1 min-w-max">
+        <button id="tab-btn-dashboard" onclick="switchTab('dashboard')" class="tab-btn tab-active px-4 py-3 text-xs sm:text-sm font-semibold transition cursor-pointer">
+          Painel Principal
+        </button>
+        <button id="tab-btn-cadastro" onclick="switchTab('cadastro')" class="tab-btn px-4 py-3 text-xs sm:text-sm font-semibold text-slate-600 hover:text-emerald-700 transition cursor-pointer">
+          Cadastro do Consumidor
+        </button>
+        <button id="tab-btn-registro" onclick="switchTab('registro')" class="tab-btn px-4 py-3 text-xs sm:text-sm font-semibold text-slate-600 hover:text-emerald-700 transition cursor-pointer">
+          Registro de Consumo
+        </button>
+        <button id="tab-btn-assistente" onclick="switchTab('assistente')" class="tab-btn px-4 py-3 text-xs sm:text-sm font-semibold text-slate-600 hover:text-emerald-700 transition cursor-pointer">
+          Assistente Virtual IA
+        </button>
+        <button id="tab-btn-questionario" onclick="switchTab('questionario')" class="tab-btn px-4 py-3 text-xs sm:text-sm font-semibold text-slate-600 hover:text-emerald-700 transition cursor-pointer">
+          Questionário (Apêndice A)
+        </button>
+        <button id="tab-btn-simulador" onclick="switchTab('simulador')" class="tab-btn px-4 py-3 text-xs sm:text-sm font-semibold text-slate-600 hover:text-emerald-700 transition cursor-pointer">
+          Simulador de Energia
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- =================================================================== -->
+    <!-- ABA 1: PAINEL PRINCIPAL (DASHBOARD)                                 -->
+    <!-- =================================================================== -->
+    <section id="tab-dashboard" class="tab-section space-y-6">
+
+      <!-- Banner Automático de Alertas Preventivos (Funcionalidade 6 do Projeto) -->
+      <div id="preventiveAlertBanner" class="hidden rounded-2xl p-4 border shadow-sm transition-all">
+        <div class="flex items-start gap-3">
+          <div id="preventiveAlertIcon" class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5"></div>
+          <div class="flex-1">
+            <h2 id="preventiveAlertTitle" class="text-sm font-bold"></h2>
+            <p id="preventiveAlertMessage" class="text-xs sm:text-sm mt-1 leading-relaxed"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 Cartões de Indicadores (KPIs) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- KPI 1: Consumo Acumulado -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Consumo Acumulado</span>
+            <span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">Mês Atual</span>
+          </div>
+          <div class="mt-3 flex items-baseline gap-1.5">
+            <span id="kpiAccumulatedKwh" class="text-2xl sm:text-3xl font-extrabold text-slate-900">0,0</span>
+            <span class="text-sm font-semibold text-slate-500">kWh</span>
+          </div>
+          <p id="kpiRecordsCount" class="text-xs text-slate-500 mt-2">Baseado em 0 registros lançados</p>
+        </div>
+
+        <!-- KPI 2: Média Diária -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Média Diária</span>
+            <span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-sky-50 text-sky-700">Tendência</span>
+          </div>
+          <div class="mt-3 flex items-baseline gap-1.5">
+            <span id="kpiDailyAvg" class="text-2xl sm:text-3xl font-extrabold text-slate-900">0,0</span>
+            <span class="text-sm font-semibold text-slate-500">kWh/dia</span>
+          </div>
+          <p id="kpiProjectedMonth" class="text-xs text-slate-500 mt-2">Projeção 30 dias: ~0 kWh</p>
+        </div>
+
+        <!-- KPI 3: Estimativa de Gastos -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Estimativa de Gastos</span>
+            <span id="kpiFlagBadge" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Bandeira Verde</span>
+          </div>
+          <div class="mt-3 flex items-baseline gap-1">
+            <span class="text-sm font-bold text-slate-500">R$</span>
+            <span id="kpiEstimatedCost" class="text-2xl sm:text-3xl font-extrabold text-slate-900">0,00</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-2 leading-snug">
+            *Valor aproximado (tarifa + bandeira; não inclui CIP ou impostos variáveis).
+          </p>
+        </div>
+
+        <!-- KPI 4: Limite Mensal Planejado -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Limite Mensal</span>
+            <span id="kpiLimitPercent" class="text-xs font-extrabold text-emerald-700">0%</span>
+          </div>
+          <div class="mt-3 flex items-baseline gap-1.5">
+            <span id="kpiLimitValue" class="text-2xl sm:text-3xl font-extrabold text-slate-900">300</span>
+            <span class="text-sm font-semibold text-slate-500">kWh</span>
+          </div>
+          <div class="w-full bg-slate-100 h-2.5 rounded-full mt-2.5 overflow-hidden">
+            <div id="kpiLimitBar" class="bg-emerald-600 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seletor Interativo de Bandeiras Tarifárias ANEEL -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">Bandeira Tarifária ANEEL Vigente (Simulação)</h3>
+            <p class="text-xs text-slate-500">Selecione a bandeira para recalcular imediatamente a estimativa de gastos da fatura.</p>
+          </div>
+          <span class="text-xs font-medium text-slate-500">Adicional a cada 100 kWh consumidos</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5" id="dashboardFlagSelector">
+          <button type="button" onclick="setTariffFlag('verde')" data-flag="verde"
+            class="flag-btn text-left p-3 rounded-xl border-2 border-emerald-500 bg-emerald-50/70 transition cursor-pointer">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+              <span class="text-xs font-bold text-slate-900">Bandeira Verde</span>
+            </div>
+            <p class="text-[11px] text-slate-600 mt-1">Sem acréscimo (R$ 0,00)</p>
+          </button>
+
+          <button type="button" onclick="setTariffFlag('amarela')" data-flag="amarela"
+            class="flag-btn text-left p-3 rounded-xl border border-slate-200 hover:border-amber-400 bg-white transition cursor-pointer">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+              <span class="text-xs font-bold text-slate-900">Bandeira Amarela</span>
+            </div>
+            <p class="text-[11px] text-slate-600 mt-1">+ R$ 1,885 / 100 kWh</p>
+          </button>
+
+          <button type="button" onclick="setTariffFlag('vermelha1')" data-flag="vermelha1"
+            class="flag-btn text-left p-3 rounded-xl border border-slate-200 hover:border-red-400 bg-white transition cursor-pointer">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-red-500"></span>
+              <span class="text-xs font-bold text-slate-900">Vermelha Patamar 1</span>
+            </div>
+            <p class="text-[11px] text-slate-600 mt-1">+ R$ 4,463 / 100 kWh</p>
+          </button>
+
+          <button type="button" onclick="setTariffFlag('vermelha2')" data-flag="vermelha2"
+            class="flag-btn text-left p-3 rounded-xl border border-slate-200 hover:border-rose-700 bg-white transition cursor-pointer">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-rose-800"></span>
+              <span class="text-xs font-bold text-slate-900">Vermelha Patamar 2</span>
+            </div>
+            <p class="text-[11px] text-slate-600 mt-1">+ R$ 7,877 / 100 kWh</p>
+          </button>
+
+          <button type="button" onclick="setTariffFlag('escassez')" data-flag="escassez"
+            class="flag-btn text-left p-3 rounded-xl border border-slate-200 hover:border-purple-600 bg-white transition cursor-pointer">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-purple-700"></span>
+              <span class="text-xs font-bold text-slate-900">Escassez Hídrica</span>
+            </div>
+            <p class="text-[11px] text-slate-600 mt-1">+ R$ 14,20 / 100 kWh</p>
+          </button>
+        </div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- MÓDULO: MONITORAMENTO DIÁRIO — DISPOSITIVO NO DISJUNTOR (SIMULADO)  -->
+      <!-- =================================================================== -->
+      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-emerald-200/90 shadow-sm">
+        <!-- Cabeçalho do Módulo -->
+        <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4 pb-5">
+          <div class="flex items-start gap-3.5">
+            <div class="w-11 h-11 rounded-2xl bg-emerald-950 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="7" y="7" width="10" height="10" rx="2" />
+                <path stroke-linecap="round" d="M9 4v3M15 4v3M9 17v3M15 17v3M4 9h3M4 15h3M17 9h3M17 15h3" />
+              </svg>
+            </div>
+            <div>
+              <div class="flex flex-wrap items-center gap-2">
+                <h3 class="text-base sm:text-lg font-extrabold text-slate-900">
+                  Monitoramento Diário — Simulação de Dispositivo no Disjuntor
+                </h3>
+                <span class="inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                  DADOS SIMULADOS (PROTÓTIPO SEM HARDWARE FÍSICO)
+                </span>
+              </div>
+              <p class="text-xs text-slate-600 mt-1.5 leading-relaxed max-w-3xl">
+                Conforme previsto na metodologia do projeto (Seções 1 e 6), na ausência da integração física com um sensor/medidor instalado no quadro de distribuição (disjuntor), este módulo <strong>simula em tempo real os pulsos de consumo diário</strong> enviados ao aplicativo, fazendo a barra de consumo do dia crescer progressivamente.
+              </p>
+            </div>
+          </div>
+
+          <!-- Status do Disjuntor Virtual -->
+          <div class="shrink-0 self-start">
+            <span id="breakerStatusPill" class="inline-flex items-center gap-2 bg-slate-900 text-slate-200 text-xs font-semibold px-3.5 py-2 rounded-xl border border-slate-800 shadow-sm">
+              <span id="breakerPulseDot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+              <span id="breakerStatusPillText">Disjuntor Virtual: Em espera</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Caixa Principal de Consumo Acumulado Hoje + Barra Dinâmica -->
+        <div class="bg-slate-50/90 border border-slate-200/90 rounded-2xl p-4 sm:p-5">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3">
+            <div>
+              <span class="block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                CONSUMO ACUMULADO HOJE (SIMULAÇÃO DO DISJUNTOR)
+              </span>
+              <div class="flex flex-wrap items-baseline gap-2 mt-1">
+                <span id="breakerDailyKwh" class="text-3xl sm:text-4xl font-extrabold text-slate-900">0,00</span>
+                <span class="text-sm font-bold text-slate-600">kWh hoje</span>
+                <span class="text-xs text-slate-500">/ Referência diária: <strong id="breakerDailyLimit" class="text-slate-800">10,00 kWh</strong></span>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2.5">
+              <div class="bg-white border border-slate-200 rounded-xl px-4 py-2 text-center min-w-[125px] shadow-2xs">
+                <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">PERCENTUAL DO DIA</span>
+                <strong id="breakerDailyPercent" class="text-base sm:text-lg font-extrabold text-emerald-600">0,0%</strong>
+              </div>
+              <div class="bg-white border border-slate-200 rounded-xl px-4 py-2 text-center min-w-[135px] shadow-2xs">
+                <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">CUSTO ESTIMADO HOJE</span>
+                <strong id="breakerDailyCost" class="text-base sm:text-lg font-extrabold text-slate-900">R$ 0,00</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Barra de Progresso Dinâmica -->
+          <div class="w-full h-3.5 bg-slate-200/90 rounded-full overflow-hidden">
+            <div id="breakerDailyBar"
+              class="h-full rounded-full bg-emerald-600 transition-all duration-500"
+              style="width: 1.5%">
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-slate-500 mt-2">
+            <span>0 kWh</span>
+            <span id="breakerMetaFormulaText" class="text-center font-medium text-slate-600">Meta diária calculada: Limite Mensal (300 kWh) ÷ 30 dias</span>
+            <span id="breakerDailyMaxTick">10,00 kWh (100%)</span>
+          </div>
+        </div>
+
+        <!-- Grade Inferior: Simular Aparelhos + Telemetria do Disjuntor -->
+        <div class="mt-5 grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+          <!-- Coluna Esquerda (7 colunas): Aparelhos e Ações -->
+          <div class="lg:col-span-7 flex flex-col justify-between space-y-4">
+            <div>
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-700">
+                  SIMULAR CONSUMO DE APARELHOS (+ PULSO NO DISJUNTOR)
+                </span>
+                <button type="button" id="btnToggleAutoBreaker" onclick="toggleAutoBreakerSimulation()"
+                  class="bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-sm cursor-pointer">
+                  ▶ Iniciar Simulação Automática (2s)
+                </button>
+              </div>
+
+              <!-- 4 Botões de Aparelhos -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <button type="button" onclick="simulateBreakerPulse(0.25, 'Iluminação / Standby', 250)"
+                  class="flex items-center justify-between gap-2 p-3 rounded-xl border border-slate-200 bg-white hover:border-emerald-400 hover:bg-emerald-50/40 text-left transition cursor-pointer">
+                  <div>
+                    <div class="text-xs font-bold text-slate-800">💡 Iluminação / Standby</div>
+                    <div class="text-[11px] text-slate-500">Carga leve contínua (~250 W)</div>
+                  </div>
+                  <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
+                    +0,25 kWh
+                  </span>
+                </button>
+
+                <button type="button" onclick="simulateBreakerPulse(0.80, 'Geladeira / Freezer', 800)"
+                  class="flex items-center justify-between gap-2 p-3 rounded-xl border border-slate-200 bg-white hover:border-emerald-400 hover:bg-emerald-50/40 text-left transition cursor-pointer">
+                  <div>
+                    <div class="text-xs font-bold text-slate-800">🧊 Geladeira / Freezer</div>
+                    <div class="text-[11px] text-slate-500">Ciclo de refrigeração (~800 W)</div>
+                  </div>
+                  <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
+                    +0,80 kWh
+                  </span>
+                </button>
+
+                <button type="button" onclick="simulateBreakerPulse(1.50, 'Ar-Condicionado (1h)', 1500)"
+                  class="flex items-center justify-between gap-2 p-3 rounded-xl border border-slate-200 bg-white hover:border-amber-400 hover:bg-amber-50/40 text-left transition cursor-pointer">
+                  <div>
+                    <div class="text-xs font-bold text-slate-800">❄️ Ar-Condicionado (1h)</div>
+                    <div class="text-[11px] text-slate-500">Climatização residencial (~1.500 W)</div>
+                  </div>
+                  <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 shrink-0">
+                    +1,50 kWh
+                  </span>
+                </button>
+
+                <button type="button" onclick="simulateBreakerPulse(2.20, 'Chuveiro Elétrico', 4400)"
+                  class="flex items-center justify-between gap-2 p-3 rounded-xl border border-slate-200 bg-white hover:border-red-400 hover:bg-red-50/40 text-left transition cursor-pointer">
+                  <div>
+                    <div class="text-xs font-bold text-slate-800">🚿 Chuveiro Elétrico</div>
+                    <div class="text-[11px] text-slate-500">Alta potência instantânea (~4.400 W)</div>
+                  </div>
+                  <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-red-50 text-red-700 border border-red-200 shrink-0">
+                    +2,20 kWh
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Botões Inferiores -->
+            <div class="flex flex-wrap items-center gap-2.5 pt-1">
+              <button type="button" onclick="commitBreakerDailyToRecords()"
+                class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition shadow-sm cursor-pointer">
+                ✓ Registrar Consumo de Hoje no Histórico Oficial
+              </button>
+              <button type="button" onclick="resetBreakerDaily()"
+                class="bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold px-4 py-2.5 rounded-xl border border-slate-300 transition cursor-pointer">
+                Zerar Barra do Dia
+              </button>
+            </div>
+          </div>
+
+          <!-- Coluna Direita (5 colunas): Console Escuro TELEMETRIA DO DISJUNTOR -->
+          <div class="lg:col-span-5 bg-slate-950 text-slate-200 rounded-2xl p-4 flex flex-col justify-between border border-slate-800 shadow-inner min-h-[210px]">
+            <div class="flex items-center justify-between pb-2.5 border-b border-slate-800">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                TELEMETRIA DO DISJUNTOR
+              </span>
+              <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                SIMULADO
+              </span>
+            </div>
+
+            <div id="breakerTelemetryLog" class="my-2.5 flex-1 overflow-y-auto max-h-32 space-y-1.5 font-mono text-[11px] text-slate-300 pr-1">
+              <!-- Preenchido via JS -->
+            </div>
+
+            <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+              <span>Última potência:</span>
+              <strong id="breakerLastPower" class="font-mono text-emerald-400">0 W</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gráficos Interativos (Funcionalidade 5 do Projeto) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <h3 class="text-sm font-bold text-slate-900">Evolução dos Registros Diários (kWh)</h3>
+          <p class="text-xs text-slate-500 mb-4">Acompanhamento dos lançamentos registrados no período atual.</p>
+          <div class="relative h-64 w-full">
+            <canvas id="dailyChart"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <h3 class="text-sm font-bold text-slate-900">Comparativo Histórico Mensal (kWh)</h3>
+          <p class="text-xs text-slate-500 mb-4">Comparação entre os meses anteriores (simulados) e o acumulado atual.</p>
+          <div class="relative h-64 w-full">
+            <canvas id="monthlyChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- ABA 2: CADASTRO DO CONSUMIDOR (CONFORME LGPD — SEÇÃO 7.3)           -->
+    <!-- =================================================================== -->
+    <section id="tab-cadastro" class="tab-section hidden space-y-6">
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+          <div>
+            <h2 class="text-lg font-extrabold text-slate-900">Cadastro do Consumidor e Parâmetros Residenciais</h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+              Personalize sua unidade consumidora, tarifa de energia e limites mensais para cálculos e alertas inteligentes.
+            </p>
+          </div>
+          <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 shrink-0">
+            Conformidade LGPD • Lei nº 13.709/2018
+          </span>
+        </div>
+
+        <!-- Aviso LGPD (Seção 7.3 do Projeto) -->
+        <div class="mt-4 bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-600 leading-relaxed">
+          <strong class="text-slate-800">Privacidade e Minimização de Dados (Seção 7.3):</strong>
+          Em respeito à LGPD, este protótipo <strong>não solicita CPF, endereço completo ou número da unidade consumidora</strong>. Você pode utilizar um apelido ou pseudônimo, e todos os dados ficam armazenados localmente apenas no seu navegador.
+        </div>
+
+        <form id="consumerForm" onsubmit="saveConsumerProfile(event)" class="mt-6 space-y-6">
+          <!-- Bloco 1: Identificação e Perfil Residencial -->
+          <div>
+            <h3 class="text-sm font-bold text-slate-800 mb-3">1. Perfil da Residência</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label for="consumerName" class="block text-xs font-semibold text-slate-700 mb-1">
+                  Nome ou Pseudônimo (Opcional)
+                </label>
+                <input type="text" id="consumerName" placeholder="Ex: Família Silva / Casa 01"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              </div>
+
+              <div>
+                <label for="residenceType" class="block text-xs font-semibold text-slate-700 mb-1">
+                  Tipo de Residência
+                </label>
+                <select id="residenceType"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                  <option value="Casa">Casa</option>
+                  <option value="Apartamento">Apartamento</option>
+                  <option value="Kitnet / Outros">Kitnet / Outros</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="residentsCount" class="block text-xs font-semibold text-slate-700 mb-1">
+                  Quantidade de Moradores
+                </label>
+                <input type="number" id="residentsCount" min="1" max="20" value="3"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              </div>
+
+              <div>
+                <label for="utilityCompany" class="block text-xs font-semibold text-slate-700 mb-1">
+                  Concessionária de Energia
+                </label>
+                <input type="text" id="utilityCompany" value="Amazonas Energia"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Bloco 2: Configuração Tarifária e Limite Mensal Planejado -->
+          <div class="pt-4 border-t border-slate-100">
+            <h3 class="text-sm font-bold text-slate-800 mb-3">2. Configuração Tarifária e Limite Mensal Planejado</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label for="tariffValue" class="block text-xs font-semibold text-slate-700 mb-1">
+                  Tarifa (R$/kWh) <span class="text-red-500">*</span>
+                </label>
+                <input type="number" id="tariffValue" step="0.01" min="0.10" value="0.89" required
+                  oninput="updateTariffMetaPreview()"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              </div>
+
+              <div>
+                <label for="consumerFlag" class="block text-xs font-semibold text-slate-700 mb-1">
+                  Bandeira Vigente
+                </label>
+                <select id="consumerFlag" onchange="updateTariffMetaPreview()"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                  <option value="verde">Verde (R$ 0,00 / 100 kWh)</option>
+                  <option value="amarela">Amarela (+R$ 1,885 / 100 kWh)</option>
+                  <option value="vermelha1">Vermelha Patamar 1 (+R$ 4,463 / 100 kWh)</option>
+                  <option value="vermelha2">Vermelha Patamar 2 (+R$ 7,877 / 100 kWh)</option>
+                  <option value="escassez">Bandeira de Escassez Hídrica (+R$ 14,20 / 100 kWh)</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="monthlyLimitKwh" class="block text-xs font-semibold text-slate-700 mb-1">
+                  Limite Mensal (kWh) <span class="text-red-500">*</span>
+                </label>
+                <input type="number" id="monthlyLimitKwh" min="10" max="10000" value="300" required
+                  oninput="updateTariffMetaPreview()"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              </div>
+
+              <div>
+                <label for="financialGoal" class="block text-xs font-semibold text-slate-700 mb-1">
+                  Meta Financeira (R$ opcional)
+                </label>
+                <input type="number" id="financialGoal" step="0.01" min="0" placeholder="Ex: 267.00"
+                  class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                <p class="text-[11px] text-emerald-700 font-medium mt-1">
+                  Sugestão (Bandeira Vigente): <strong id="metaCurrentFlagHint">R$ 267,00</strong>
+                </p>
+              </div>
+            </div>
+
+            <!-- Simulador em Tempo Real da Meta Mensal por Bandeira Tarifária -->
+            <div class="mt-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl p-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                <div>
+                  <h4 class="text-xs sm:text-sm font-bold text-emerald-950">
+                    Simulação da Fatura Mensal para a Meta Estipulada (<span id="simMetaKwhLabel">300</span> kWh × R$ <span id="simMetaTariffLabel">0,89</span>)
+                  </h4>
+                  <p class="text-[11px] text-emerald-800">
+                    Veja quanto será o valor estimado da sua fatura mensal em cada bandeira tarifária. Clique em uma bandeira para preencher a Meta Financeira.
+                  </p>
+                </div>
+                <button type="button" onclick="applySelectedFlagToMeta()"
+                  class="bg-emerald-700 hover:bg-emerald-600 text-white text-[11px] font-semibold px-3 py-2 rounded-xl transition shrink-0 cursor-pointer">
+                  Usar valor da Bandeira Vigente na Meta
+                </button>
+              </div>
+
+              <div id="metaFlagsBreakdownGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+                <!-- Preenchido dinamicamente pelo JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Bloco 3: Alertas Preventivos e Equipamentos Principais -->
+          <div class="pt-4 border-t border-slate-100 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <h3 class="text-sm font-bold text-slate-800 mb-3">3. Limiares de Alertas Preventivos</h3>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label for="alertThreshold1" class="block text-xs font-semibold text-slate-700 mb-1">
+                    Alerta Preventivo 1 (%)
+                  </label>
+                  <input type="number" id="alertThreshold1" min="10" max="99" value="80"
+                    class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                </div>
+                <div>
+                  <label for="alertThreshold2" class="block text-xs font-semibold text-slate-700 mb-1">
+                    Alerta Crítico 2 (%)
+                  </label>
+                  <input type="number" id="alertThreshold2" min="10" max="100" value="90"
+                    class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                </div>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-2">
+                Quando o consumo atingir esses percentuais, o painel exibirá automaticamente os alertas preventivos planejados na metodologia.
+              </p>
+            </div>
+
+            <div>
+              <h3 class="text-sm font-bold text-slate-800 mb-3">4. Principais Equipamentos da Residência</h3>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+                <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer">
+                  <input type="checkbox" name="appliances" value="Ar-condicionado" checked class="rounded text-emerald-600 focus:ring-emerald-500" />
+                  <span>Ar-condicionado</span>
+                </label>
+                <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer">
+                  <input type="checkbox" name="appliances" value="Geladeira" checked class="rounded text-emerald-600 focus:ring-emerald-500" />
+                  <span>Geladeira</span>
+                </label>
+                <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer">
+                  <input type="checkbox" name="appliances" value="Chuveiro elétrico" class="rounded text-emerald-600 focus:ring-emerald-500" />
+                  <span>Chuveiro elétrico</span>
+                </label>
+                <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer">
+                  <input type="checkbox" name="appliances" value="Ventilador" checked class="rounded text-emerald-600 focus:ring-emerald-500" />
+                  <span>Ventilador</span>
+                </label>
+                <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer">
+                  <input type="checkbox" name="appliances" value="Máquina de lavar" class="rounded text-emerald-600 focus:ring-emerald-500" />
+                  <span>Máquina de lavar</span>
+                </label>
+                <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer">
+                  <input type="checkbox" name="appliances" value="Outros eletrônicos" checked class="rounded text-emerald-600 focus:ring-emerald-500" />
+                  <span>Outros eletrônicos</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+            <button type="button" onclick="resetDemoData()"
+              class="text-xs font-semibold text-slate-600 hover:text-red-600 px-4 py-2.5 rounded-xl border border-slate-200 hover:border-red-200 transition cursor-pointer">
+              Restaurar Dados Simulados Padrão
+            </button>
+            <button type="submit"
+              class="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold px-6 py-3 rounded-xl shadow-sm transition cursor-pointer">
+              Salvar Configurações do Consumidor
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- ABA 3: REGISTRO DE CONSUMO (FUNCIONALIDADE 1 DO PROJETO)            -->
+    <!-- =================================================================== -->
+    <section id="tab-registro" class="tab-section hidden space-y-6">
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <h2 class="text-lg font-extrabold text-slate-900">Registrar Leitura ou Consumo em kWh</h2>
+        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+          Informe leituras manuais ou simuladas acompanhadas de data, período e origem do dado.
+        </p>
+
+        <form onsubmit="addConsumptionRecord(event)" class="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+          <div>
+            <label for="regDate" class="block text-xs font-semibold text-slate-700 mb-1">Data *</label>
+            <input type="date" id="regDate" required
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          </div>
+
+          <div>
+            <label for="regKwh" class="block text-xs font-semibold text-slate-700 mb-1">Consumo (kWh) *</label>
+            <input type="number" id="regKwh" step="0.01" min="0.01" placeholder="Ex: 9.50" required
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          </div>
+
+          <div>
+            <label for="regPeriod" class="block text-xs font-semibold text-slate-700 mb-1">Período</label>
+            <select id="regPeriod"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="Dia Completo">Dia Completo</option>
+              <option value="Manhã">Manhã</option>
+              <option value="Tarde">Tarde</option>
+              <option value="Noite">Noite</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="regSource" class="block text-xs font-semibold text-slate-700 mb-1">Origem do Dado</label>
+            <select id="regSource"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="Informado pelo Usuário">Informado pelo Usuário</option>
+              <option value="Dados Simulados">Dados Simulados</option>
+            </select>
+          </div>
+
+          <div>
+            <button type="submit"
+              class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow-sm transition cursor-pointer">
+              + Adicionar Registro
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Tabela de Registros -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">Histórico de Registros do Mês</h3>
+            <p class="text-xs text-slate-500">Todos os registros são utilizados automaticamente nos cálculos de média, estimativa e IA.</p>
+          </div>
+          <button onclick="exportRecordsCSV()"
+            class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition cursor-pointer shrink-0">
+            Exportar CSV
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                <th class="py-3 px-4">Data</th>
+                <th class="py-3 px-4">Período</th>
+                <th class="py-3 px-4">Consumo (kWh)</th>
+                <th class="py-3 px-4">Estimativa (R$)</th>
+                <th class="py-3 px-4">Origem</th>
+                <th class="py-3 px-4 text-right">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="recordsTableBody" class="divide-y divide-slate-100 text-xs sm:text-sm">
+              <!-- Preenchido via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- ABA 4: ASSISTENTE VIRTUAL IA (FUNCIONALIDADE 7 DO PROJETO)          -->
+    <!-- =================================================================== -->
+    <section id="tab-assistente" class="tab-section hidden">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[640px]">
+        <!-- Topo do Chat -->
+        <div class="p-4 sm:p-5 bg-slate-900 text-white flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center">
+              <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-sm sm:text-base font-bold">Assistente EnergIA — Inteligência Artificial</h2>
+              <p class="text-[11px] text-slate-300">Análise de padrões, previsão de gastos e orientações de eficiência energética</p>
+            </div>
+          </div>
+          <span class="text-[11px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-2.5 py-1 rounded-full font-medium">
+            Online
+          </span>
+        </div>
+
+        <!-- Sugestões Rápidas (As 6 perguntas exatas da Seção 6 do Projeto) -->
+        <div class="p-3 bg-slate-50 border-b border-slate-200">
+          <p class="text-[11px] font-semibold text-slate-500 mb-2">Perguntas sugeridas no projeto de pesquisa (clique para consultar):</p>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="askSuggestedQuestion('Quanto já consumi neste mês?')"
+              class="text-xs bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 px-3 py-1.5 rounded-xl transition cursor-pointer">
+              1) Quanto já consumi neste mês?
+            </button>
+            <button onclick="askSuggestedQuestion('Qual é a média diária de consumo?')"
+              class="text-xs bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 px-3 py-1.5 rounded-xl transition cursor-pointer">
+              2) Qual é a média diária de consumo?
+            </button>
+            <button onclick="askSuggestedQuestion('Estou perto do meu limite mensal?')"
+              class="text-xs bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 px-3 py-1.5 rounded-xl transition cursor-pointer">
+              3) Estou perto do meu limite mensal?
+            </button>
+            <button onclick="askSuggestedQuestion('Compare o consumo desta semana com a semana passada?')"
+              class="text-xs bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 px-3 py-1.5 rounded-xl transition cursor-pointer">
+              4) Compare o consumo desta semana com a semana passada?
+            </button>
+            <button onclick="askSuggestedQuestion('Qual é a estimativa de gasto com a tarifa cadastrada?')"
+              class="text-xs bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 px-3 py-1.5 rounded-xl transition cursor-pointer">
+              5) Qual é a estimativa de gasto com a tarifa cadastrada?
+            </button>
+            <button onclick="askSuggestedQuestion('Mostre um resumo do consumo deste mês?')"
+              class="text-xs bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 px-3 py-1.5 rounded-xl transition cursor-pointer">
+              6) Mostre um resumo do consumo deste mês?
+            </button>
+          </div>
+        </div>
+
+        <!-- Histórico de Mensagens -->
+        <div id="chatMessages" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-slate-50/40">
+          <!-- Mensagem inicial inserida via JS -->
+        </div>
+
+        <!-- Entrada de Texto Livre -->
+        <form onsubmit="handleChatSubmit(event)" class="p-3 sm:p-4 bg-white border-t border-slate-200 flex gap-2">
+          <input type="text" id="chatInput" placeholder="Pergunte sobre seu consumo, média diária, bandeiras ou dicas de economia..."
+            class="flex-1 rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          <button type="submit"
+            class="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition cursor-pointer shrink-0">
+            Enviar
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- ABA 5: QUESTIONÁRIO (APÊNDICE A DO PROJETO DE PESQUISA)             -->
+    <!-- =================================================================== -->
+    <section id="tab-questionario" class="tab-section hidden space-y-6">
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <div class="pb-4 border-b border-slate-100">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
+            Apêndice A • Levantamento de Dados da Pesquisa
+          </span>
+          <h2 class="text-lg font-extrabold text-slate-900 mt-2">
+            Questionário de Avaliação e Hábitos de Consumo Residencial
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
+            <strong>Objetivo:</strong> Identificar hábitos e dificuldades relacionados ao acompanhamento do consumo de energia elétrica nas residências. A participação é <strong>voluntária e anônima</strong> (não solicita nome, endereço, CPF ou número da unidade consumidora).
+          </p>
+        </div>
+
+        <form id="surveyForm" onsubmit="submitSurvey(event)" class="mt-6 space-y-5">
+          <!-- Pergunta 1 -->
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+            <p class="text-sm font-bold text-slate-800 mb-2.5">1) Você costuma acompanhar o consumo de energia elétrica da sua residência durante o mês?</p>
+            <div class="flex flex-wrap gap-4 text-xs sm:text-sm">
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q1" value="Sempre" required class="text-emerald-600" /> Sempre</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q1" value="Às vezes" class="text-emerald-600" /> Às vezes</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q1" value="Nunca" class="text-emerald-600" /> Nunca</label>
+            </div>
+          </div>
+
+          <!-- Pergunta 2 -->
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+            <p class="text-sm font-bold text-slate-800 mb-2.5">2) Você sabe quantos kWh sua residência consome mensalmente?</p>
+            <div class="flex flex-wrap gap-4 text-xs sm:text-sm">
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q2" value="Sim" required class="text-emerald-600" /> Sim</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q2" value="Não" class="text-emerald-600" /> Não</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q2" value="Tenho uma ideia aproximada" class="text-emerald-600" /> Tenho uma ideia aproximada</label>
+            </div>
+          </div>
+
+          <!-- Pergunta 3 -->
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+            <p class="text-sm font-bold text-slate-800 mb-2.5">3) Qual equipamento você acredita que mais contribui para o consumo da sua residência?</p>
+            <div class="flex flex-wrap gap-4 text-xs sm:text-sm">
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q3" value="Ar-condicionado" required class="text-emerald-600" /> Ar-condicionado</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q3" value="Geladeira" class="text-emerald-600" /> Geladeira</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q3" value="Chuveiro elétrico" class="text-emerald-600" /> Chuveiro elétrico</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q3" value="Ventilador" class="text-emerald-600" /> Ventilador</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q3" value="Outros" class="text-emerald-600" /> Outros</label>
+            </div>
+          </div>
+
+          <!-- Pergunta 4 -->
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+            <p class="text-sm font-bold text-slate-800 mb-2.5">4) Você considera difícil controlar o valor da conta de energia elétrica?</p>
+            <div class="flex flex-wrap gap-4 text-xs sm:text-sm">
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q4" value="Sim" required class="text-emerald-600" /> Sim</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q4" value="Não" class="text-emerald-600" /> Não</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q4" value="Às vezes" class="text-emerald-600" /> Às vezes</label>
+            </div>
+          </div>
+
+          <!-- Pergunta 5 -->
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+            <p class="text-sm font-bold text-slate-800 mb-2.5">5) Você costuma verificar o consumo antes de receber a fatura?</p>
+            <div class="flex flex-wrap gap-4 text-xs sm:text-sm">
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q5" value="Sim" required class="text-emerald-600" /> Sim</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q5" value="Não" class="text-emerald-600" /> Não</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q5" value="Às vezes" class="text-emerald-600" /> Às vezes</label>
+            </div>
+          </div>
+
+          <!-- Pergunta 6 -->
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+            <p class="text-sm font-bold text-slate-800 mb-2.5">6) Você gostaria de receber alertas quando o consumo estivesse próximo de ultrapassar um limite mensal?</p>
+            <div class="flex flex-wrap gap-4 text-xs sm:text-sm">
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q6" value="Sim" required class="text-emerald-600" /> Sim</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q6" value="Não" class="text-emerald-600" /> Não</label>
+            </div>
+          </div>
+
+          <!-- Pergunta 7 -->
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+            <p class="text-sm font-bold text-slate-800 mb-2.5">7) Você utilizaria um assistente inteligente para acompanhar o consumo de energia da sua residência?</p>
+            <div class="flex flex-wrap gap-4 text-xs sm:text-sm">
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q7" value="Sim" required class="text-emerald-600" /> Sim</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q7" value="Não" class="text-emerald-600" /> Não</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="q7" value="Talvez" class="text-emerald-600" /> Talvez</label>
+            </div>
+          </div>
+
+          <!-- Pergunta 8 -->
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+            <p class="text-sm font-bold text-slate-800 mb-2.5">8) Quais funcionalidades considera mais importantes? (Pode marcar mais de uma)</p>
+            <div class="flex flex-wrap gap-4 text-xs sm:text-sm">
+              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="q8" value="Registro de consumo" class="rounded text-emerald-600" /> Registro de consumo</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="q8" value="Estimativa de gastos" class="rounded text-emerald-600" /> Estimativa de gastos</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="q8" value="Gráficos e relatórios" class="rounded text-emerald-600" /> Gráficos e relatórios</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="q8" value="Alertas" class="rounded text-emerald-600" /> Alertas</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="q8" value="Sugestões de economia" class="rounded text-emerald-600" /> Sugestões de economia</label>
+            </div>
+          </div>
+
+          <!-- Comentários -->
+          <div>
+            <label for="surveyComments" class="block text-xs font-bold text-slate-700 mb-1">Comentários ou sugestões:</label>
+            <textarea id="surveyComments" rows="3" placeholder="Deixe sua opinião sobre a facilidade de uso, gráficos, alertas e utilidade do protótipo..."
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+          </div>
+
+          <div class="flex justify-end">
+            <button type="submit"
+              class="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold px-6 py-3 rounded-xl shadow-sm transition cursor-pointer">
+              Enviar Resposta Anônima
+            </button>
+          </div>
+        </form>
+
+        <!-- Resumo das Respostas Coletadas -->
+        <div id="surveyResultsBox" class="mt-6 pt-5 border-t border-slate-200">
+          <!-- Atualizado via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- ABA 6: SIMULADOR RÁPIDO DE ENERGIA (SIMPLES E OBJETIVO)             -->
+    <!-- =================================================================== -->
+    <section id="tab-simulador" class="tab-section hidden space-y-6">
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-lg font-extrabold text-slate-900">Simulador Rápido de Consumo e Gasto de Energia</h2>
+              <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                Cálculo Instantâneo
+              </span>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+              Escolha um equipamento ou informe a potência para descobrir na hora o consumo em kWh e o valor estimado na conta.
+            </p>
+          </div>
+          <div class="text-xs bg-slate-50 border border-slate-200 px-3.5 py-2 rounded-xl text-slate-700 shrink-0">
+            Tarifa Aplicada: <strong id="simAppliedTariffBadge" class="text-emerald-700">R$ 0,89/kWh</strong> •
+            <strong id="simAppliedFlagBadge" class="text-slate-900">Bandeira Verde</strong>
+          </div>
+        </div>
+
+        <!-- Formulário Objetivo de Simulação -->
+        <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div class="sm:col-span-2 lg:col-span-1">
+            <label for="simAppliancePreset" class="block text-xs font-semibold text-slate-700 mb-1">
+              Aparelho Comum
+            </label>
+            <select id="simAppliancePreset" onchange="handleSimPresetChange()"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="ac9000" data-watts="850" data-hours="8" data-name="Ar-Condicionado Split 9.000 BTUs">Ar-Condicionado 9.000 BTUs (850 W)</option>
+              <option value="ac12000" data-watts="1150" data-hours="8" data-name="Ar-Condicionado Split 12.000 BTUs">Ar-Condicionado 12.000 BTUs (1.150 W)</option>
+              <option value="geladeira" data-watts="150" data-hours="24" data-name="Geladeira Duplex">Geladeira Duplex (150 W / 24h)</option>
+              <option value="chuveiro" data-watts="4500" data-hours="0.5" data-name="Chuveiro Elétrico">Chuveiro Elétrico (4.500 W)</option>
+              <option value="ventilador" data-watts="80" data-hours="10" data-name="Ventilador de Mesa">Ventilador de Mesa (80 W)</option>
+              <option value="tv50" data-watts="110" data-hours="5" data-name="TV LED 50&quot;">TV LED 50" (110 W)</option>
+              <option value="lavar" data-watts="500" data-hours="1" data-name="Máquina de Lavar">Máquina de Lavar (500 W)</option>
+              <option value="ferro" data-watts="1200" data-hours="0.5" data-name="Ferro de Passar">Ferro de Passar (1.200 W)</option>
+              <option value="lampada" data-watts="12" data-hours="6" data-name="Lâmpada LED">Lâmpada LED (12 W)</option>
+              <option value="custom" data-watts="500" data-hours="2" data-name="Aparelho Personalizado">Aparelho Personalizado</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="simWatts" class="block text-xs font-semibold text-slate-700 mb-1">
+              Potência (Watts)
+            </label>
+            <input type="number" id="simWatts" min="1" max="50000" step="1" value="850" oninput="recalculateSimpleSimulator()"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          </div>
+
+          <div>
+            <label for="simHoursPerDay" class="block text-xs font-semibold text-slate-700 mb-1">
+              Horas por Dia (h/dia)
+            </label>
+            <input type="number" id="simHoursPerDay" min="0.1" max="24" step="0.1" value="8" oninput="recalculateSimpleSimulator()"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          </div>
+
+          <div>
+            <label for="simDaysPerMonth" class="block text-xs font-semibold text-slate-700 mb-1">
+              Dias no Mês
+            </label>
+            <input type="number" id="simDaysPerMonth" min="1" max="31" step="1" value="30" oninput="recalculateSimpleSimulator()"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          </div>
+
+          <div>
+            <label for="simQuantity" class="block text-xs font-semibold text-slate-700 mb-1">
+              Quantidade
+            </label>
+            <input type="number" id="simQuantity" min="1" max="100" step="1" value="1" oninput="recalculateSimpleSimulator()"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          </div>
+        </div>
+
+        <!-- Resultado Imediato em 4 Cartões Objetivos -->
+        <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="rounded-2xl p-4 bg-slate-50 border border-slate-200">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Consumo Diário</span>
+            <div class="mt-2 flex items-baseline gap-1.5">
+              <span id="simResDailyKwh" class="text-2xl font-extrabold text-slate-900">6,80</span>
+              <span class="text-xs font-semibold text-slate-500">kWh/dia</span>
+            </div>
+          </div>
+
+          <div class="rounded-2xl p-4 bg-slate-50 border border-slate-200">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Consumo Mensal</span>
+            <div class="mt-2 flex items-baseline gap-1.5">
+              <span id="simResMonthlyKwh" class="text-2xl font-extrabold text-slate-900">204,00</span>
+              <span class="text-xs font-semibold text-slate-500">kWh/mês</span>
+            </div>
+          </div>
+
+          <div class="rounded-2xl p-4 bg-emerald-50/70 border border-emerald-200">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-800">Custo Diário Estimado</span>
+            <div class="mt-2 flex items-baseline gap-1">
+              <span class="text-xs font-bold text-emerald-700">R$</span>
+              <span id="simResDailyCost" class="text-2xl font-extrabold text-emerald-900">6,05</span>
+            </div>
+          </div>
+
+          <div class="rounded-2xl p-4 bg-emerald-600 text-white shadow-sm">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-100">Custo Mensal Estimado</span>
+            <div class="mt-2 flex items-baseline gap-1">
+              <span class="text-xs font-bold text-emerald-100">R$</span>
+              <span id="simResMonthlyCost" class="text-2xl font-extrabold text-white">181,56</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ação para Adicionar à Lista Combinada -->
+        <div class="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-slate-100">
+          <p class="text-[11px] text-slate-500">
+            Fórmula aplicada: <code class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">(Potência W × Horas/dia × Dias × Qtd) ÷ 1.000</code> multiplicado pela tarifa e bandeira vigentes.
+          </p>
+          <button type="button" onclick="addCurrentSimToList()"
+            class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition shadow-sm cursor-pointer shrink-0">
+            + Adicionar à Lista de Simulação
+          </button>
+        </div>
+      </div>
+
+      <!-- Mini-Lista Combinada de Simulação -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+          <div>
+            <h3 class="text-sm sm:text-base font-extrabold text-slate-900">Minha Lista de Simulação Combinada</h3>
+            <p class="text-xs text-slate-500">Some vários aparelhos da residência para estimar o impacto conjunto na fatura mensal.</p>
+          </div>
+          <button type="button" onclick="clearSimulationList()"
+            class="text-xs font-semibold text-slate-600 hover:text-red-600 px-3.5 py-2 rounded-xl border border-slate-200 hover:border-red-200 transition cursor-pointer shrink-0">
+            Limpar Lista
+          </button>
+        </div>
+
+        <div id="simListContainer" class="mt-4 space-y-2.5">
+          <!-- Preenchido via JS -->
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 rounded-xl p-4">
+          <span class="text-xs sm:text-sm font-bold text-slate-800">Total Combinado dos Aparelhos Listados:</span>
+          <div class="flex flex-wrap items-center gap-4">
+            <div class="text-xs sm:text-sm">
+              Consumo: <strong id="simListTotalKwh" class="text-slate-900 font-extrabold">0,00 kWh/mês</strong>
+            </div>
+            <div class="text-xs sm:text-sm">
+              Gasto Estimado: <strong id="simListTotalCost" class="text-emerald-700 font-extrabold">R$ 0,00/mês</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="bg-white border-t border-slate-200 mt-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div>
+        <strong>Instituto Benjamin Constant (IBC)</strong> — Curso Técnico de Nível Médio em Inteligência Artificial • Manaus - AM, 2026.
+      </div>
+      <div>
+        Autoras: Ana Silvia G. Ribeiro, Camila J. S. Vilaça, Elizabeth A. B. Rocha, Pauliana C. Saraiva, Raquel M. Santos • Orientador: Prof. Esp. Jean C. O. Coelho.
+      </div>
+    </div>
+  </footer>
+
+  </div> <!-- Fim de #mainAppWrapper -->
+
+  <!-- ===================================================================== -->
+  <!-- LÓGICA DA APLICAÇÃO (ESTADO, CÁLCULOS, GRÁFICOS, CADASTRO E IA)       -->
+  <!-- ===================================================================== -->
+  <script>
+    // Chaves de armazenamento local (LGPD: dados mantidos localmente no dispositivo)
+    const STORAGE_KEYS = {
+      CONSUMER: 'energia_ibc_consumer_v1',
+      RECORDS: 'energia_ibc_records_v1',
+      SURVEY: 'energia_ibc_survey_v1',
+      BREAKER_DAILY: 'energia_ibc_breaker_daily_v1',
+      AUTH_ACCOUNT: 'energia_ibc_auth_account_v1',
+      AUTH_SESSION: 'energia_ibc_auth_session_v1'
+    };
+
+    // Bandeiras Tarifárias ANEEL (adicional a cada 100 kWh)
+    const TARIFF_FLAGS = {
+      verde: { label: 'Bandeira Verde', short: 'Verde', extraPer100: 0 },
+      amarela: { label: 'Bandeira Amarela', short: 'Amarela', extraPer100: 1.885 },
+      vermelha1: { label: 'Vermelha Patamar 1', short: 'Vermelha P1', extraPer100: 4.463 },
+      vermelha2: { label: 'Vermelha Patamar 2', short: 'Vermelha P2', extraPer100: 7.877 },
+      escassez: { label: 'Bandeira de Escassez Hídrica', short: 'Escassez Hídrica', extraPer100: 14.20 }
+    };
+
+    // Perfil padrão inicial do consumidor
+    const DEFAULT_CONSUMER = {
+      isRegistered: false,
+      name: '',
+      residenceType: 'Casa',
+      residentsCount: 3,
+      utilityCompany: 'Amazonas Energia',
+      tariffValue: 0.89,
+      flag: 'verde',
+      monthlyLimitKwh: 300,
+      financialGoal: '',
+      alertThreshold1: 80,
+      alertThreshold2: 90,
+      appliances: ['Ar-condicionado', 'Geladeira', 'Ventilador', 'Outros eletrônicos']
+    };
+
+    // Gera registros simulados iniciais dos últimos 14 dias
+    function generateDefaultRecords() {
+      const sampleValues = [9.2, 8.8, 10.1, 9.5, 8.9, 10.4, 9.8, 9.1, 10.6, 11.2, 9.7, 10.3, 10.9, 11.5];
+      const baseDate = new Date();
+      return sampleValues.map((val, idx) => {
+        const d = new Date(baseDate);
+        d.setDate(baseDate.getDate() - (sampleValues.length - 1 - idx));
+        return {
+          id: 1000 + idx,
+          date: d.toISOString().split('T')[0],
+          period: 'Dia Completo',
+          kwh: val,
+          source: 'Dados Simulados'
+        };
+      });
+    }
+
+    // =========================================================================
+    // MÓDULO: TELA INICIAL DE LOGIN E CADASTRO (ÁREA DO CLIENTE)
+    // =========================================================================
+    const captchaVerified = { login: false, register: false };
+
+    function applyCpfCnpjMask(input) {
+      let v = input.value.replace(/\D/g, '').slice(0, 14);
+      if (v.length <= 11) {
+        v = v.replace(/(\d{3})(\d)/, '$1.$2');
+        v = v.replace(/(\d{3})(\d)/, '$1.$2');
+        v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+      } else {
+        v = v.replace(/^(\d{2})(\d)/, '$1.$2');
+        v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+        v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
+        v = v.replace(/(\d{4})(\d)/, '$1-$2');
+      }
+      input.value = v;
+    }
+
+    function togglePasswordVisibility(inputId, iconId) {
+      const inp = document.getElementById(inputId);
+      if (!inp) return;
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+    }
+
+    function toggleRecaptcha(scope) {
+      captchaVerified[scope] = !captchaVerified[scope];
+      const checkBox = document.getElementById(`${scope}CaptchaCheck`);
+      const tick = document.getElementById(`${scope}CaptchaTick`);
+      const box = document.getElementById(`${scope}CaptchaBox`);
+      const err = document.getElementById(`${scope}CaptchaError`);
+
+      if (captchaVerified[scope]) {
+        checkBox.classList.remove('border-slate-300', 'bg-white');
+        checkBox.classList.add('border-emerald-600', 'bg-emerald-50');
+        tick.classList.remove('hidden');
+        if (box) box.setAttribute('aria-checked', 'true');
+        if (err) err.classList.add('hidden');
+      } else {
+        checkBox.classList.add('border-slate-300', 'bg-white');
+        checkBox.classList.remove('border-emerald-600', 'bg-emerald-50');
+        tick.classList.add('hidden');
+        if (box) box.setAttribute('aria-checked', 'false');
+      }
+    }
+
+    function switchAuthMode(mode) {
+      const loginView = document.getElementById('authLoginView');
+      const regView = document.getElementById('authRegisterView');
+      if (mode === 'register') {
+        loginView.classList.add('hidden');
+        regView.classList.remove('hidden');
+      } else {
+        regView.classList.add('hidden');
+        loginView.classList.remove('hidden');
+      }
+    }
+
+    function handleForgotPassword() {
+      showToast('Recuperação de senha: em ambiente de protótipo local, você pode criar uma nova conta ou entrar com seu CPF/CNPJ e uma nova senha.');
+    }
+
+    function enterMainApplication(welcomeMsg) {
+      const landing = document.getElementById('authLandingScreen');
+      const appWrap = document.getElementById('mainAppWrapper');
+      if (landing) landing.classList.add('hidden');
+      if (appWrap) appWrap.classList.remove('hidden');
+      try {
+        localStorage.setItem(STORAGE_KEYS.AUTH_SESSION, 'active');
+      } catch (e) {}
+      populateConsumerForm();
+      updateAllUI();
+      if (welcomeMsg) showToast(welcomeMsg);
+    }
+
+    function logoutToLanding() {
+      closeSandbarMenu();
+      const landing = document.getElementById('authLandingScreen');
+      const appWrap = document.getElementById('mainAppWrapper');
+      if (appWrap) appWrap.classList.add('hidden');
+      if (landing) landing.classList.remove('hidden');
+      try {
+        localStorage.removeItem(STORAGE_KEYS.AUTH_SESSION);
+      } catch (e) {}
+      showToast('Você saiu para a Área do Cliente.');
+    }
+
+    function handleAuthLogin(event) {
+      event.preventDefault();
+      const docRaw = document.getElementById('loginDocInput').value.trim();
+      const docDigits = docRaw.replace(/\D/g, '');
+      const pass = document.getElementById('loginPassInput').value.trim();
+
+      const docErr = document.getElementById('loginDocError');
+      const passErr = document.getElementById('loginPassError');
+      const capErr = document.getElementById('loginCaptchaError');
+
+      let valid = true;
+      if (docDigits.length !== 11 && docDigits.length !== 14) {
+        docErr.classList.remove('hidden');
+        valid = false;
+      } else {
+        docErr.classList.add('hidden');
+      }
+
+      if (!pass) {
+        passErr.classList.remove('hidden');
+        valid = false;
+      } else {
+        passErr.classList.add('hidden');
+      }
+
+      if (!captchaVerified.login) {
+        capErr.classList.remove('hidden');
+        valid = false;
+      } else {
+        capErr.classList.add('hidden');
+      }
+
+      if (!valid) return;
+
+      const savedAccount = loadState(STORAGE_KEYS.AUTH_ACCOUNT, null);
+      if (savedAccount && savedAccount.docDigits === docDigits) {
+        if (savedAccount.password && savedAccount.password !== pass) {
+          showToast('Senha incorreta para o CPF/CNPJ cadastrado.', 'warning');
+          return;
+        }
+        if (savedAccount.name && !consumer.name) {
+          consumer.name = savedAccount.name;
+          saveState();
+        }
+        enterMainApplication(`Bem-vindo(a) de volta, ${savedAccount.name || 'Consumidor'}!`);
+      } else {
+        if (!consumer.name) {
+          consumer.name = docDigits.length === 11
+            ? `Unidade CPF •••.${docDigits.slice(6, 9)}-${docDigits.slice(9)}`
+            : `Unidade CNPJ ••••/${docDigits.slice(8, 12)}-${docDigits.slice(12)}`;
+          saveState();
+        }
+        enterMainApplication('Acesso realizado com sucesso! Bem-vindo ao EnergIA na Palma da Mão.');
+      }
+    }
+
+    function handleAuthRegister(event) {
+      event.preventDefault();
+      const name = document.getElementById('regUserName').value.trim();
+      const docRaw = document.getElementById('regUserDoc').value.trim();
+      const docDigits = docRaw.replace(/\D/g, '');
+      const email = document.getElementById('regUserEmail').value.trim();
+      const utility = document.getElementById('regUserUtility').value.trim() || 'Amazonas Energia';
+      const pass = document.getElementById('regUserPass').value;
+      const passConfirm = document.getElementById('regUserPassConfirm').value;
+
+      if (!name) {
+        showToast('Informe seu nome ou pseudônimo para criar a conta.', 'warning');
+        return;
+      }
+      if (docDigits.length !== 11 && docDigits.length !== 14) {
+        showToast('Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.', 'warning');
+        return;
+      }
+      if (!pass || pass.length < 4) {
+        showToast('Crie uma senha com pelo menos 4 caracteres.', 'warning');
+        return;
+      }
+      if (pass !== passConfirm) {
+        showToast('A confirmação de senha não confere.', 'warning');
+        return;
+      }
+      if (!captchaVerified.register) {
+        showToast('Marque a caixa "Não sou um robô" para continuar.', 'warning');
+        return;
+      }
+
+      const accountData = {
+        name,
+        docFormatted: docRaw,
+        docDigits,
+        email,
+        utility,
+        password: pass,
+        createdAt: new Date().toISOString()
+      };
+
+      try {
+        localStorage.setItem(STORAGE_KEYS.AUTH_ACCOUNT, JSON.stringify(accountData));
+      } catch (e) {}
+
+      // Sincroniza automaticamente com o Cadastro do Consumidor do painel
+      consumer.isRegistered = true;
+      consumer.name = name;
+      consumer.utilityCompany = utility;
+      saveState();
+
+      enterMainApplication(`Conta criada com sucesso! Bem-vindo(a), ${name}.`);
+    }
+
+    // Estado global carregado do localStorage
+    let consumer = loadState(STORAGE_KEYS.CONSUMER, { ...DEFAULT_CONSUMER });
+    let records = loadState(STORAGE_KEYS.RECORDS, generateDefaultRecords());
+    let surveyResponses = loadState(STORAGE_KEYS.SURVEY, []);
+    let breakerDailyKwh = Number(loadState(STORAGE_KEYS.BREAKER_DAILY, 0)) || 0;
+    let breakerLastWatts = 0;
+    let autoBreakerTimer = null;
+    let dailyChartInstance = null;
+    let monthlyChartInstance = null;
+
+    function loadState(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (e) {
+        return fallback;
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEYS.CONSUMER, JSON.stringify(consumer));
+        localStorage.setItem(STORAGE_KEYS.RECORDS, JSON.stringify(records));
+        localStorage.setItem(STORAGE_KEYS.SURVEY, JSON.stringify(surveyResponses));
+        localStorage.setItem(STORAGE_KEYS.BREAKER_DAILY, JSON.stringify(breakerDailyKwh));
+      } catch (e) {
+        // Ignora falha de armazenamento se o navegador bloquear localStorage
+      }
+    }
+
+    function formatKwh(val) {
+      return Number(val || 0).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+    }
+
+    function formatBRL(val) {
+      return Number(val || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function calculateCost(kwh, customTariff = null, customFlag = null) {
+      const tariff = customTariff !== null ? Number(customTariff) : (Number(consumer.tariffValue) || 0.89);
+      const flagKey = customFlag !== null ? customFlag : (consumer.flag || 'verde');
+      const flagObj = TARIFF_FLAGS[flagKey] || TARIFF_FLAGS.verde;
+      const baseCost = Number(kwh) * tariff;
+      const flagExtra = (Number(kwh) / 100) * flagObj.extraPer100;
+      return baseCost + flagExtra;
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const toast = document.createElement('div');
+      const colors = type === 'warning'
+        ? 'bg-amber-600 text-white border-amber-500'
+        : 'bg-slate-900 text-white border-emerald-500/40';
+      toast.className = `${colors} border rounded-xl px-4 py-3 text-xs font-semibold shadow-lg pointer-events-auto transition-all`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+
+    function setTariffFlag(flagKey) {
+      if (!TARIFF_FLAGS[flagKey]) return;
+      consumer.flag = flagKey;
+      const formFlagSelect = document.getElementById('consumerFlag');
+      if (formFlagSelect) {
+        formFlagSelect.value = flagKey;
+        updateTariffMetaPreview();
+      }
+      saveState();
+      updateAllUI();
+      showToast(`Bandeira alterada para ${TARIFF_FLAGS[flagKey].label}.`);
+    }
+
+    // Navegação entre abas e sincronização com o Menu Sandbar
+    function openSandbarMenu() {
+      const overlay = document.getElementById('sandbarOverlay');
+      const drawer = document.getElementById('sandbarDrawer');
+      if (!overlay || !drawer) return;
+      overlay.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        overlay.classList.remove('opacity-0');
+        drawer.classList.remove('-translate-x-full');
+      });
+      overlay.setAttribute('aria-hidden', 'false');
+      drawer.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeSandbarMenu() {
+      const overlay = document.getElementById('sandbarOverlay');
+      const drawer = document.getElementById('sandbarDrawer');
+      if (!overlay || !drawer) return;
+      overlay.classList.add('opacity-0');
+      drawer.classList.add('-translate-x-full');
+      overlay.setAttribute('aria-hidden', 'true');
+      drawer.setAttribute('aria-hidden', 'true');
+      setTimeout(() => {
+        overlay.classList.add('hidden');
+      }, 300);
+    }
+
+    function navigateFromSandbar(tabName) {
+      switchTab(tabName);
+      closeSandbarMenu();
+    }
+
+    function syncSandbarActiveState(tabName) {
+      document.querySelectorAll('.sandbar-btn').forEach(btn => {
+        btn.classList.remove('bg-emerald-600', 'text-white', 'shadow-sm');
+        btn.classList.add('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
+      });
+      const activeSandbarBtn = document.getElementById(`sandbar-btn-${tabName}`);
+      if (activeSandbarBtn) {
+        activeSandbarBtn.classList.add('bg-emerald-600', 'text-white', 'shadow-sm');
+        activeSandbarBtn.classList.remove('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
+      }
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-section').forEach(sec => sec.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('tab-active');
+        btn.classList.add('text-slate-600');
+      });
+
+      const activeSec = document.getElementById(`tab-${tabName}`);
+      const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+      if (activeSec) activeSec.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.classList.add('tab-active');
+        activeBtn.classList.remove('text-slate-600');
+      }
+
+      syncSandbarActiveState(tabName);
+
+      if (tabName === 'dashboard') {
+        renderCharts();
+      }
+      if (tabName === 'simulador') {
+        recalculateSimpleSimulator();
+      }
+    }
+
+    function updateAllUI() {
+      const displayName = consumer.name ? consumer.name : 'Perfil Padrão (Simulado)';
+      const headerNameEl = document.getElementById('headerConsumerName');
+      const sandbarNameEl = document.getElementById('sandbarConsumerName');
+      const headerTariffEl = document.getElementById('headerTariffDisplay');
+      if (headerNameEl) headerNameEl.textContent = displayName;
+      if (sandbarNameEl) sandbarNameEl.textContent = displayName;
+      if (headerTariffEl) {
+        headerTariffEl.textContent = Number(consumer.tariffValue || 0.89).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+
+      // KPIs do Painel Principal
+      const totalKwh = records.reduce((acc, r) => acc + Number(r.kwh), 0);
+      const uniqueDays = new Set(records.map(r => r.date)).size || 1;
+      const dailyAvg = records.length ? (totalKwh / uniqueDays) : 0;
+      const projected30 = dailyAvg * 30;
+      const limit = Number(consumer.monthlyLimitKwh) || 300;
+      const pct = (totalKwh / limit) * 100;
+      const flagObj = TARIFF_FLAGS[consumer.flag] || TARIFF_FLAGS.verde;
+      const estCost = calculateCost(totalKwh);
+
+      document.getElementById('kpiAccumulatedKwh').textContent = formatKwh(totalKwh);
+      document.getElementById('kpiRecordsCount').textContent = `Baseado em ${records.length} registro(s) lançado(s)`;
+      document.getElementById('kpiDailyAvg').textContent = formatKwh(dailyAvg);
+      document.getElementById('kpiProjectedMonth').textContent = `Projeção 30 dias: ~${Math.round(projected30)} kWh`;
+      document.getElementById('kpiEstimatedCost').textContent = formatBRL(estCost);
+      document.getElementById('kpiFlagBadge').textContent = flagObj.label;
+      document.getElementById('kpiLimitValue').textContent = limit;
+      document.getElementById('kpiLimitPercent').textContent = `${pct.toFixed(1).replace('.', ',')}%`;
+
+      const limitBar = document.getElementById('kpiLimitBar');
+      limitBar.style.width = `${Math.min(pct, 100)}%`;
+      if (pct >= (consumer.alertThreshold2 || 90)) {
+        limitBar.className = 'bg-red-600 h-full rounded-full transition-all duration-300';
+      } else if (pct >= (consumer.alertThreshold1 || 80)) {
+        limitBar.className = 'bg-amber-500 h-full rounded-full transition-all duration-300';
+      } else {
+        limitBar.className = 'bg-emerald-600 h-full rounded-full transition-all duration-300';
+      }
+
+      // Destaque dos botões de bandeira tarifária no Dashboard
+      document.querySelectorAll('.flag-btn').forEach(btn => {
+        const fKey = btn.getAttribute('data-flag');
+        if (fKey === consumer.flag) {
+          btn.classList.remove('border', 'border-slate-200', 'bg-white');
+          btn.classList.add('border-2', 'border-emerald-500', 'bg-emerald-50/70');
+        } else {
+          btn.classList.remove('border-2', 'border-emerald-500', 'bg-emerald-50/70');
+          btn.classList.add('border', 'border-slate-200', 'bg-white');
+        }
+      });
+
+      // Banner de Alertas Preventivos (Funcionalidade 6 do Projeto)
+      const alertBanner = document.getElementById('preventiveAlertBanner');
+      const alertIcon = document.getElementById('preventiveAlertIcon');
+      const alertTitle = document.getElementById('preventiveAlertTitle');
+      const alertMsg = document.getElementById('preventiveAlertMessage');
+      const t1 = Number(consumer.alertThreshold1) || 80;
+      const t2 = Number(consumer.alertThreshold2) || 90;
+
+      if (pct >= t2) {
+        alertBanner.className = 'rounded-2xl p-4 border border-red-300 bg-red-50 text-red-900 shadow-sm transition-all';
+        alertIcon.className = 'w-9 h-9 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 mt-0.5 font-extrabold';
+        alertIcon.textContent = '!';
+        alertTitle.textContent = `Alerta Crítico de Consumo (${pct.toFixed(1).replace('.', ',')}% do limite mensal)`;
+        alertMsg.textContent = 'Atenção! Você já utilizou 90% ou mais do limite mensal planejado de energia. Acompanhe os próximos registros e verifique os períodos de maior consumo.';
+      } else if (pct >= t1) {
+        alertBanner.className = 'rounded-2xl p-4 border border-amber-300 bg-amber-50 text-amber-900 shadow-sm transition-all';
+        alertIcon.className = 'w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 mt-0.5 font-extrabold';
+        alertIcon.textContent = '!';
+        alertTitle.textContent = `Alerta Preventivo (${pct.toFixed(1).replace('.', ',')}% do limite mensal)`;
+        alertMsg.textContent = `Você já atingiu ${pct.toFixed(1).replace('.', ',')}% do limite mensal planejado (${formatKwh(totalKwh)} de ${limit} kWh). Avalie o tempo de uso dos aparelhos de maior potência.`;
+      } else {
+        alertBanner.className = 'hidden';
+      }
+
+      // Atualiza módulo diário do disjuntor simulado
+      updateBreakerUI();
+
+      // Atualiza simulador rápido de energia (se existir na página)
+      if (typeof recalculateSimpleSimulator === 'function') {
+        recalculateSimpleSimulator();
+      }
+
+      // Atualiza tabela de registros e gráficos
+      renderRecordsTable();
+      renderCharts();
+      renderSurveySummary();
+    }
+
+    // =========================================================================
+    // MÓDULO: DISPOSITIVO NO DISJUNTOR (CONSUMO DIÁRIO COM DADOS SIMULADOS)
+    // =========================================================================
+    function initBreakerTelemetry() {
+      const logBox = document.getElementById('breakerTelemetryLog');
+      if (!logBox) return;
+      logBox.innerHTML = '';
+      appendBreakerTelemetryLine(
+        '[SISTEMA] Disjuntor virtual conectado via dados simulados. Clique em um aparelho ou ative a simulação automática (2s) para ver a barra crescer.',
+        'text-emerald-300'
+      );
+    }
+
+    function appendBreakerTelemetryLine(text, colorClass = 'text-slate-300') {
+      const logBox = document.getElementById('breakerTelemetryLog');
+      if (!logBox) return;
+      const line = document.createElement('div');
+      line.className = `${colorClass} leading-snug`;
+      line.textContent = text;
+      logBox.appendChild(line);
+      while (logBox.children.length > 25) {
+        logBox.removeChild(logBox.firstChild);
+      }
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    function updateBreakerUI() {
+      const monthlyLimit = Number(consumer.monthlyLimitKwh) || 300;
+      const dailyTarget = monthlyLimit / 30;
+      const pct = (breakerDailyKwh / dailyTarget) * 100;
+      const visualPct = Math.min(pct, 100);
+      const dailyCost = calculateCost(breakerDailyKwh);
+
+      document.getElementById('breakerDailyKwh').textContent = breakerDailyKwh.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById('breakerDailyLimit').textContent = `${dailyTarget.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kWh`;
+      document.getElementById('breakerDailyMaxTick').textContent = `${dailyTarget.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kWh (100%)`;
+      document.getElementById('breakerMetaFormulaText').textContent = `Meta diária calculada: Limite Mensal (${monthlyLimit} kWh) ÷ 30 dias`;
+      document.getElementById('breakerDailyCost').textContent = `R$ ${formatBRL(dailyCost)}`;
+      document.getElementById('breakerDailyPercent').textContent = `${pct.toFixed(1).replace('.', ',')}%`;
+      document.getElementById('breakerLastPower').textContent = `${breakerLastWatts.toLocaleString('pt-BR')} W`;
+
+      const bar = document.getElementById('breakerDailyBar');
+      const pctLabel = document.getElementById('breakerDailyPercent');
+
+      bar.style.width = `${Math.max(visualPct, 1.5)}%`;
+
+      if (pct >= 100) {
+        bar.className = 'h-full rounded-full bg-red-600 transition-all duration-500';
+        pctLabel.className = 'text-base sm:text-lg font-extrabold text-red-600';
+      } else if (pct >= 80) {
+        bar.className = 'h-full rounded-full bg-amber-500 transition-all duration-500';
+        pctLabel.className = 'text-base sm:text-lg font-extrabold text-amber-600';
+      } else {
+        bar.className = 'h-full rounded-full bg-emerald-600 transition-all duration-500';
+        pctLabel.className = 'text-base sm:text-lg font-extrabold text-emerald-600';
+      }
+    }
+
+    function simulateBreakerPulse(kwhDelta, label, watts = 350) {
+      breakerDailyKwh = Number((breakerDailyKwh + kwhDelta).toFixed(2));
+      breakerLastWatts = watts;
+      saveState();
+      updateBreakerUI();
+
+      const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const kwhStr = kwhDelta.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      appendBreakerTelemetryLine(
+        `[${nowTime}] ${label} • ${watts.toLocaleString('pt-BR')} W • +${kwhStr} kWh`,
+        watts >= 1500 ? 'text-amber-300' : 'text-emerald-300'
+      );
+
+      if (label) {
+        showToast(`Disjuntor (Simulado): +${kwhStr} kWh (${label})`);
+      }
+    }
+
+    function toggleAutoBreakerSimulation() {
+      const btn = document.getElementById('btnToggleAutoBreaker');
+      const dot = document.getElementById('breakerPulseDot');
+      const statusPillText = document.getElementById('breakerStatusPillText');
+      if (autoBreakerTimer) {
+        clearInterval(autoBreakerTimer);
+        autoBreakerTimer = null;
+        btn.textContent = '▶ Iniciar Simulação Automática (2s)';
+        btn.classList.remove('bg-amber-600', 'hover:bg-amber-500');
+        btn.classList.add('bg-emerald-700', 'hover:bg-emerald-600');
+        dot.classList.remove('animate-pulse-soft', 'bg-emerald-400');
+        dot.classList.add('bg-slate-400');
+        statusPillText.textContent = 'Disjuntor Virtual: Em espera';
+        appendBreakerTelemetryLine('[SISTEMA] Simulação automática pausada.', 'text-slate-400');
+        showToast('Simulação automática do disjuntor pausada.');
+      } else {
+        const autoLoads = [
+          { name: 'Standby / Roteador', kwh: 0.12, watts: 180 },
+          { name: 'Iluminação Residencial', kwh: 0.20, watts: 250 },
+          { name: 'Geladeira (Compressor)', kwh: 0.35, watts: 800 },
+          { name: 'Ventilador / TV', kwh: 0.18, watts: 220 }
+        ];
+        autoBreakerTimer = setInterval(() => {
+          const sample = autoLoads[Math.floor(Math.random() * autoLoads.length)];
+          breakerDailyKwh = Number((breakerDailyKwh + sample.kwh).toFixed(2));
+          breakerLastWatts = sample.watts;
+          saveState();
+          updateBreakerUI();
+          const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          const kwhStr = sample.kwh.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          appendBreakerTelemetryLine(
+            `[${nowTime}] Auto • ${sample.name} • ${sample.watts} W • +${kwhStr} kWh`,
+            'text-sky-300'
+          );
+        }, 2000);
+        btn.textContent = '⏸ Pausar Simulação Automática (2s)';
+        btn.classList.remove('bg-emerald-700', 'hover:bg-emerald-600');
+        btn.classList.add('bg-amber-600', 'hover:bg-amber-500');
+        dot.classList.remove('bg-slate-400');
+        dot.classList.add('animate-pulse-soft', 'bg-emerald-400');
+        statusPillText.textContent = 'Disjuntor Virtual: Ativo (Transmitindo)';
+        appendBreakerTelemetryLine('[SISTEMA] Transmissão automática iniciada (intervalo 2s).', 'text-emerald-400');
+        showToast('Simulação contínua do disjuntor ativada (+kWh a cada 2s).');
+      }
+    }
+
+    function resetBreakerDaily() {
+      breakerDailyKwh = 0;
+      breakerLastWatts = 0;
+      saveState();
+      updateBreakerUI();
+      const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      appendBreakerTelemetryLine(`[${nowTime}] Barra do dia zerada pelo usuário (0,00 kWh).`, 'text-amber-300');
+      showToast('Contador diário simulado zerado.');
+    }
+
+    function commitBreakerDailyToRecords() {
+      if (breakerDailyKwh <= 0) {
+        showToast('O consumo simulado de hoje está zerado.', 'warning');
+        return;
+      }
+      const todayStr = new Date().toISOString().split('T')[0];
+      records.push({
+        id: Date.now(),
+        date: todayStr,
+        period: 'Dia Completo',
+        kwh: breakerDailyKwh,
+        source: 'Dados Simulados'
+      });
+      records.sort((a, b) => a.date.localeCompare(b.date));
+      const addedVal = breakerDailyKwh;
+      breakerDailyKwh = 0;
+      breakerLastWatts = 0;
+      saveState();
+      updateAllUI();
+      const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      appendBreakerTelemetryLine(
+        `[${nowTime}] Registro transferido (${formatKwh(addedVal)} kWh) para o histórico oficial.`,
+        'text-emerald-400'
+      );
+      showToast(`Consumo diário (${formatKwh(addedVal)} kWh) transferido para o histórico oficial!`);
+    }
+
+    // =========================================================================
+    // MÓDULO: CADASTRO DO CONSUMIDOR + SIMULADOR DE META POR BANDEIRA
+    // =========================================================================
+    function populateConsumerForm() {
+      document.getElementById('consumerName').value = consumer.name || '';
+      document.getElementById('residenceType').value = consumer.residenceType || 'Casa';
+      document.getElementById('residentsCount').value = consumer.residentsCount || 3;
+      document.getElementById('utilityCompany').value = consumer.utilityCompany || 'Amazonas Energia';
+      document.getElementById('tariffValue').value = consumer.tariffValue || 0.89;
+      document.getElementById('consumerFlag').value = consumer.flag || 'verde';
+      document.getElementById('monthlyLimitKwh').value = consumer.monthlyLimitKwh || 300;
+      document.getElementById('financialGoal').value = consumer.financialGoal || '';
+      document.getElementById('alertThreshold1').value = consumer.alertThreshold1 || 80;
+      document.getElementById('alertThreshold2').value = consumer.alertThreshold2 || 90;
+
+      document.querySelectorAll('input[name="appliances"]').forEach(cb => {
+        cb.checked = (consumer.appliances || []).includes(cb.value);
+      });
+
+      updateTariffMetaPreview();
+    }
+
+    function updateTariffMetaPreview() {
+      const tariff = parseFloat(document.getElementById('tariffValue').value) || 0;
+      const limitKwh = parseFloat(document.getElementById('monthlyLimitKwh').value) || 0;
+      const selectedFlag = document.getElementById('consumerFlag').value || 'verde';
+
+      document.getElementById('simMetaKwhLabel').textContent = limitKwh.toLocaleString('pt-BR');
+      document.getElementById('simMetaTariffLabel').textContent = tariff.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      const currentCost = calculateCost(limitKwh, tariff, selectedFlag);
+      document.getElementById('metaCurrentFlagHint').textContent = `R$ ${formatBRL(currentCost)}`;
+
+      const grid = document.getElementById('metaFlagsBreakdownGrid');
+      const flagOrder = ['verde', 'amarela', 'vermelha1', 'vermelha2', 'escassez'];
+      const dotClasses = {
+        verde: 'bg-emerald-500',
+        amarela: 'bg-amber-400',
+        vermelha1: 'bg-red-500',
+        vermelha2: 'bg-rose-800',
+        escassez: 'bg-purple-700'
+      };
+
+      grid.innerHTML = flagOrder.map(key => {
+        const f = TARIFF_FLAGS[key];
+        const totalEst = calculateCost(limitKwh, tariff, key);
+        const isCurrent = key === selectedFlag;
+        return `
+          <button type="button" onclick="selectFlagCostForMeta('${key}', ${totalEst.toFixed(2)})"
+            class="text-left p-3 rounded-xl transition cursor-pointer ${
+              isCurrent
+                ? 'bg-white border-2 border-emerald-600 shadow-sm'
+                : 'bg-white/90 border border-emerald-200/80 hover:border-emerald-500'
+            }">
+            <div class="flex items-center justify-between gap-1">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full ${dotClasses[key]}"></span>
+                <span class="text-[11px] font-bold text-slate-800">${f.short}</span>
+              </div>
+              ${isCurrent ? '<span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">Vigente</span>' : ''}
+            </div>
+            <div class="mt-1.5 text-sm font-extrabold text-slate-900">
+              R$ ${formatBRL(totalEst)}
+            </div>
+            <div class="text-[10px] text-slate-500 mt-0.5">
+              ${f.extraPer100 === 0 ? 'Sem adicional' : `+R$ ${f.extraPer100.toFixed(2).replace('.', ',')} / 100 kWh`}
+            </div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectFlagCostForMeta(flagKey, estimatedValue) {
+      document.getElementById('consumerFlag').value = flagKey;
+      document.getElementById('financialGoal').value = Number(estimatedValue).toFixed(2);
+      updateTariffMetaPreview();
+      showToast(`Meta financeira preenchida com R$ ${formatBRL(Number(estimatedValue))} (${TARIFF_FLAGS[flagKey].label}).`);
+    }
+
+    function applySelectedFlagToMeta() {
+      const tariff = parseFloat(document.getElementById('tariffValue').value) || 0;
+      const limitKwh = parseFloat(document.getElementById('monthlyLimitKwh').value) || 0;
+      const selectedFlag = document.getElementById('consumerFlag').value || 'verde';
+      const totalEst = calculateCost(limitKwh, tariff, selectedFlag);
+      document.getElementById('financialGoal').value = totalEst.toFixed(2);
+      showToast(`Meta financeira atualizada para R$ ${formatBRL(totalEst)}.`);
+    }
+
+    function saveConsumerProfile(event) {
+      event.preventDefault();
+      const selectedAppliances = Array.from(document.querySelectorAll('input[name="appliances"]:checked'))
+        .map(cb => cb.value);
+
+      consumer = {
+        isRegistered: true,
+        name: document.getElementById('consumerName').value.trim(),
+        residenceType: document.getElementById('residenceType').value,
+        residentsCount: parseInt(document.getElementById('residentsCount').value, 10) || 1,
+        utilityCompany: document.getElementById('utilityCompany').value.trim() || 'Amazonas Energia',
+        tariffValue: parseFloat(document.getElementById('tariffValue').value) || 0.89,
+        flag: document.getElementById('consumerFlag').value || 'verde',
+        monthlyLimitKwh: parseFloat(document.getElementById('monthlyLimitKwh').value) || 300,
+        financialGoal: document.getElementById('financialGoal').value,
+        alertThreshold1: parseInt(document.getElementById('alertThreshold1').value, 10) || 80,
+        alertThreshold2: parseInt(document.getElementById('alertThreshold2').value, 10) || 90,
+        appliances: selectedAppliances
+      };
+
+      saveState();
+      updateAllUI();
+      showToast('Cadastro do consumidor salvo e sincronizado com o painel!');
+      switchTab('dashboard');
+    }
+
+    function resetDemoData() {
+      consumer = { ...DEFAULT_CONSUMER };
+      records = generateDefaultRecords();
+      breakerDailyKwh = 0;
+      breakerLastWatts = 0;
+      saveState();
+      initBreakerTelemetry();
+      populateConsumerForm();
+      updateAllUI();
+      showToast('Dados simulados padrão restaurados.');
+    }
+
+    // =========================================================================
+    // MÓDULO: REGISTRO DE CONSUMO E TABELA
+    // =========================================================================
+    function addConsumptionRecord(event) {
+      event.preventDefault();
+      const dateVal = document.getElementById('regDate').value;
+      const kwhVal = parseFloat(document.getElementById('regKwh').value);
+      const periodVal = document.getElementById('regPeriod').value;
+      const sourceVal = document.getElementById('regSource').value;
+
+      if (!dateVal || isNaN(kwhVal) || kwhVal <= 0) {
+        showToast('Informe uma data válida e um valor em kWh maior que zero.', 'warning');
+        return;
+      }
+
+      records.push({
+        id: Date.now(),
+        date: dateVal,
+        period: periodVal,
+        kwh: kwhVal,
+        source: sourceVal
+      });
+
+      records.sort((a, b) => a.date.localeCompare(b.date));
+      saveState();
+      updateAllUI();
+      document.getElementById('regKwh').value = '';
+      showToast(`Registro de ${formatKwh(kwhVal)} kWh adicionado!`);
+    }
+
+    function deleteRecord(id) {
+      records = records.filter(r => r.id !== id);
+      saveState();
+      updateAllUI();
+      showToast('Registro removido.');
+    }
+
+    function renderRecordsTable() {
+      const tbody = document.getElementById('recordsTableBody');
+      if (!records.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400">Nenhum registro encontrado. Adicione uma leitura acima.</td></tr>`;
+        return;
+      }
+
+      const sortedDesc = [...records].sort((a, b) => b.date.localeCompare(a.date));
+      tbody.innerHTML = sortedDesc.map(r => {
+        const estCost = calculateCost(Number(r.kwh));
+        const formattedDate = r.date.split('-').reverse().join('/');
+        const isSimulated = r.source === 'Dados Simulados';
+        return `
+          <tr class="hover:bg-slate-50/80">
+            <td class="py-3 px-4 font-medium text-slate-800">${formattedDate}</td>
+            <td class="py-3 px-4 text-slate-600">${r.period}</td>
+            <td class="py-3 px-4 font-bold text-slate-900">${formatKwh(Number(r.kwh))} kWh</td>
+            <td class="py-3 px-4 text-slate-700">R$ ${formatBRL(estCost)}</td>
+            <td class="py-3 px-4">
+              <span class="text-[11px] font-medium px-2 py-0.5 rounded-full ${
+                isSimulated ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+              }">
+                ${r.source}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-right">
+              <button onclick="deleteRecord(${r.id})" class="text-xs text-red-600 hover:underline font-semibold cursor-pointer">
+                Excluir
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function exportRecordsCSV() {
+      const headers = ['Data', 'Periodo', 'Consumo_kWh', 'Estimativa_BRL', 'Origem'];
+      const rows = records.map(r => [
+        r.date,
+        r.period,
+        Number(r.kwh).toFixed(2),
+        calculateCost(Number(r.kwh)).toFixed(2),
+        r.source
+      ]);
+      const csvContent = [headers.join(';'), ...rows.map(e => e.join(';'))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'energia_na_palma_da_mao_registros.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Arquivo CSV exportado com sucesso!');
+    }
+
+    // =========================================================================
+    // MÓDULO: GRÁFICOS INTERATIVOS (CHART.JS)
+    // =========================================================================
+    function renderCharts() {
+      const dailyCanvas = document.getElementById('dailyChart');
+      const monthlyCanvas = document.getElementById('monthlyChart');
+      if (!dailyCanvas || !monthlyCanvas || typeof Chart === 'undefined') return;
+
+      // Agrupar consumo por data
+      const groupedByDate = {};
+      records.forEach(r => {
+        groupedByDate[r.date] = (groupedByDate[r.date] || 0) + Number(r.kwh);
+      });
+      const sortedDates = Object.keys(groupedByDate).sort();
+      const dailyLabels = sortedDates.map(d => d.slice(5).split('-').reverse().join('/'));
+      const dailyValues = sortedDates.map(d => Number(groupedByDate[d].toFixed(2)));
+
+      if (dailyChartInstance) dailyChartInstance.destroy();
+      dailyChartInstance = new Chart(dailyCanvas, {
+        type: 'line',
+        data: {
+          labels: dailyLabels,
+          datasets: [{
+            label: 'Consumo Diário (kWh)',
+            data: dailyValues,
+            borderColor: '#059669',
+            backgroundColor: 'rgba(16, 185, 129, 0.14)',
+            borderWidth: 2.5,
+            tension: 0.3,
+            fill: true,
+            pointRadius: 4,
+            pointBackgroundColor: '#059669'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+
+      const currentTotal = records.reduce((acc, r) => acc + Number(r.kwh), 0);
+      if (monthlyChartInstance) monthlyChartInstance.destroy();
+      monthlyChartInstance = new Chart(monthlyCanvas, {
+        type: 'bar',
+        data: {
+          labels: ['Mês -3 (Sim.)', 'Mês -2 (Sim.)', 'Mês Anterior (Sim.)', 'Mês Atual (Acum.)'],
+          datasets: [{
+            label: 'Consumo Mensal (kWh)',
+            data: [275, 292, 284, Number(currentTotal.toFixed(1))],
+            backgroundColor: ['#cbd5e1', '#cbd5e1', '#94a3b8', '#059669'],
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // =========================================================================
+    // MÓDULO: ASSISTENTE VIRTUAL COM INTELIGÊNCIA ARTIFICIAL
+    // =========================================================================
+    function initChat() {
+      const chatBox = document.getElementById('chatMessages');
+      chatBox.innerHTML = '';
+      appendChatMessage(
+        'assistant',
+        'Olá! Sou o assistente inteligente do projeto **EnergIA na Palma da Mão** (IBC - Manaus/AM). Analiso seus registros de consumo em kWh, tarifas, bandeiras e limites planejados para ajudar sua família a evitar surpresas na fatura. Escolha uma das perguntas acima ou digite sua dúvida abaixo!'
+      );
+    }
+
+    function appendChatMessage(sender, text) {
+      const chatBox = document.getElementById('chatMessages');
+      const wrapper = document.createElement('div');
+      wrapper.className = sender === 'user' ? 'flex justify-end' : 'flex justify-start';
+
+      const bubble = document.createElement('div');
+      bubble.className = sender === 'user'
+        ? 'max-w-[82%] rounded-2xl rounded-br-sm bg-emerald-600 text-white px-4 py-3 text-xs sm:text-sm shadow-sm'
+        : 'max-w-[88%] rounded-2xl rounded-bl-sm bg-white border border-slate-200 text-slate-800 px-4 py-3 text-xs sm:text-sm shadow-sm leading-relaxed';
+
+      // Formatação simples de negrito (**texto**) e quebras de linha
+      const formatted = text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>');
+      bubble.innerHTML = formatted;
+
+      wrapper.appendChild(bubble);
+      chatBox.appendChild(wrapper);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function askSuggestedQuestion(question) {
+      appendChatMessage('user', question);
+      const reply = generateAIResponse(question);
+      setTimeout(() => appendChatMessage('assistant', reply), 220);
+    }
+
+    function handleChatSubmit(event) {
+      event.preventDefault();
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      askSuggestedQuestion(text);
+    }
+
+    function generateAIResponse(query) {
+      const q = query.toLowerCase();
+      const totalKwh = records.reduce((acc, r) => acc + Number(r.kwh), 0);
+      const uniqueDays = new Set(records.map(r => r.date)).size || 1;
+      const dailyAvg = totalKwh / uniqueDays;
+      const limit = Number(consumer.monthlyLimitKwh) || 300;
+      const pct = (totalKwh / limit) * 100;
+      const flagObj = TARIFF_FLAGS[consumer.flag] || TARIFF_FLAGS.verde;
+      const totalCost = calculateCost(totalKwh);
+      const projectedKwh = dailyAvg * 30;
+      const projectedCost = calculateCost(projectedKwh);
+
+      // Comparativo entre últimos 7 registros e 7 anteriores
+      const sorted = [...records].sort((a, b) => a.date.localeCompare(b.date));
+      const thisWeek = sorted.slice(-7).reduce((s, r) => s + Number(r.kwh), 0);
+      const prevWeek = sorted.slice(-14, -7).reduce((s, r) => s + Number(r.kwh), 0);
+
+      if (q.includes('quanto') && (q.includes('consumi') || q.includes('mês') || q.includes('mes'))) {
+        return `Até o momento, o consumo acumulado registrado neste mês é de **${formatKwh(totalKwh)} kWh** (distribuído em ${uniqueDays} dias), o que corresponde a **${pct.toFixed(1)}%** do seu limite mensal planejado de **${limit} kWh**.`;
+      }
+
+      if (q.includes('média') || q.includes('media') || q.includes('diária') || q.includes('diaria')) {
+        return `Sua média diária atual é de **${formatKwh(dailyAvg)} kWh/dia**. Mantendo esse ritmo durante 30 dias, a projeção de fechamento do mês é de aproximadamente **${formatKwh(projectedKwh)} kWh** (estimativa de **R$ ${formatBRL(projectedCost)}** na ${flagObj.label}).`;
+      }
+
+      if (q.includes('limite') || q.includes('perto') || q.includes('alerta')) {
+        if (pct >= consumer.alertThreshold2) {
+          return `**Atenção! Você já utilizou ${pct.toFixed(1)}% do limite mensal planejado de energia (${formatKwh(totalKwh)} de ${limit} kWh).** Acompanhe os próximos registros e verifique os períodos de maior consumo, especialmente o uso de ${(consumer.appliances || ['ar-condicionado'])[0]}.`;
+        } else if (pct >= consumer.alertThreshold1) {
+          return `Você está em **zona de atenção**: já utilizou **${pct.toFixed(1)}%** (${formatKwh(totalKwh)} kWh) do limite planejado de **${limit} kWh**. Restam **${formatKwh(Math.max(limit - totalKwh, 0))} kWh** dentro da sua meta.`;
+        }
+        return `Você ainda está dentro da margem segura: consumiu **${pct.toFixed(1)}%** (${formatKwh(totalKwh)} kWh) do limite mensal planejado de **${limit} kWh**, restando **${formatKwh(Math.max(limit - totalKwh, 0))} kWh**.`;
+      }
+
+      if (q.includes('semana') || q.includes('compare') || q.includes('comparar')) {
+        if (prevWeek <= 0) {
+          return `Nos últimos 7 registros você acumulou **${formatKwh(thisWeek)} kWh**. Ainda não há 14 registros suficientes para comparar com uma semana anterior completa.`;
+        }
+        const diff = thisWeek - prevWeek;
+        const diffPct = (diff / prevWeek) * 100;
+        const trend = diff > 0
+          ? `um **aumento de ${formatKwh(diff)} kWh (+${diffPct.toFixed(1)}%)**`
+          : `uma **redução de ${formatKwh(Math.abs(diff))} kWh (${diffPct.toFixed(1)}%)**`;
+        return `Comparativo semanal:\n• **Últimos 7 registros:** ${formatKwh(thisWeek)} kWh\n• **7 registros anteriores:** ${formatKwh(prevWeek)} kWh\nHouve ${trend} em relação ao período anterior.`;
+      }
+
+      if (q.includes('estimativa') || q.includes('gasto') || q.includes('tarifa') || q.includes('reais') || q.includes('valor')) {
+        return `Com a tarifa cadastrada de **R$ ${Number(consumer.tariffValue).toFixed(2).replace('.', ',')}/kWh** e a **${flagObj.label}**, o gasto acumulado estimado é de **R$ ${formatBRL(totalCost)}** para **${formatKwh(totalKwh)} kWh**.\n*(Observação: trata-se de uma estimativa simplificada de consumo + bandeira, sem tributos municipais como CIP/COSIP).*`;
+      }
+
+      if (q.includes('resumo')) {
+        const appliancesList = (consumer.appliances && consumer.appliances.length)
+          ? consumer.appliances.join(', ')
+          : 'não informados';
+        return `**Resumo Inteligente do Mês (${consumer.utilityCompany}):**\n• **Consumo Acumulado:** ${formatKwh(totalKwh)} kWh (${pct.toFixed(1)}% do limite de ${limit} kWh)\n• **Média Diária:** ${formatKwh(dailyAvg)} kWh/dia\n• **Estimativa Atual:** R$ ${formatBRL(totalCost)} (${flagObj.label})\n• **Equipamentos cadastrados:** ${appliancesList}\n• **Recomendação IA:** Evite picos simultâneos no horário de maior calor e mantenha o ar-condicionado em 23°C–24°C para economizar até 15% na fatura.`;
+      }
+
+      return `Analisei seus dados atuais: você acumulou **${formatKwh(totalKwh)} kWh** (${pct.toFixed(1)}% do limite de ${limit} kWh), com média de **${formatKwh(dailyAvg)} kWh/dia** e gasto estimado de **R$ ${formatBRL(totalCost)}** na **${flagObj.label}**. Você também pode clicar em uma das 6 perguntas sugeridas acima para obter relatórios específicos!`;
+    }
+
+    // =========================================================================
+    // MÓDULO: QUESTIONÁRIO DO APÊNDICE A
+    // =========================================================================
+    function submitSurvey(event) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+      const q8Selected = Array.from(form.querySelectorAll('input[name="q8"]:checked')).map(cb => cb.value);
+
+      const entry = {
+        timestamp: new Date().toISOString(),
+        q1: formData.get('q1'),
+        q2: formData.get('q2'),
+        q3: formData.get('q3'),
+        q4: formData.get('q4'),
+        q5: formData.get('q5'),
+        q6: formData.get('q6'),
+        q7: formData.get('q7'),
+        q8: q8Selected,
+        comments: document.getElementById('surveyComments').value.trim()
+      };
+
+      surveyResponses.push(entry);
+      saveState();
+      form.reset();
+      renderSurveySummary();
+      showToast('Obrigado! Sua resposta anônima ao Apêndice A foi registrada.');
+    }
+
+    function renderSurveySummary() {
+      const container = document.getElementById('surveyResultsBox');
+      if (!container) return;
+      if (!surveyResponses.length) {
+        container.innerHTML = `<p class="text-xs text-slate-500">Nenhuma resposta registrada nesta sessão ainda. Preencha o formulário acima para validar a pesquisa.</p>`;
+        return;
+      }
+
+      const wantAlerts = surveyResponses.filter(r => r.q6 === 'Sim').length;
+      const wouldUseAI = surveyResponses.filter(r => r.q7 === 'Sim').length;
+
+      container.innerHTML = `
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">Participações Registradas neste Protótipo: ${surveyResponses.length}</h3>
+            <p class="text-xs text-slate-600 mt-0.5">
+              • Desejam receber alertas de limite mensal: <strong>${wantAlerts} de ${surveyResponses.length}</strong><br>
+              • Utilizariam o assistente inteligente: <strong>${wouldUseAI} de ${surveyResponses.length}</strong>
+            </p>
+          </div>
+          <span class="text-[11px] text-slate-400">Dados anônimos armazenados localmente (LGPD)</span>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // MÓDULO: SIMULADOR RÁPIDO DE ENERGIA (SIMPLES E OBJETIVO)
+    // =========================================================================
+    let simulationCart = [];
+
+    function handleSimPresetChange() {
+      const select = document.getElementById('simAppliancePreset');
+      if (!select) return;
+      const option = select.options[select.selectedIndex];
+      const watts = option.getAttribute('data-watts');
+      const hours = option.getAttribute('data-hours');
+      if (watts) document.getElementById('simWatts').value = watts;
+      if (hours) document.getElementById('simHoursPerDay').value = hours;
+      recalculateSimpleSimulator();
+    }
+
+    function recalculateSimpleSimulator() {
+      const wattsInput = document.getElementById('simWatts');
+      if (!wattsInput) return;
+
+      const watts = Math.max(0, parseFloat(wattsInput.value) || 0);
+      const hours = Math.max(0, parseFloat(document.getElementById('simHoursPerDay').value) || 0);
+      const days = Math.max(1, parseInt(document.getElementById('simDaysPerMonth').value, 10) || 30);
+      const qty = Math.max(1, parseInt(document.getElementById('simQuantity').value, 10) || 1);
+
+      const dailyKwh = (watts * hours * qty) / 1000;
+      const monthlyKwh = dailyKwh * days;
+      const dailyCost = calculateCost(dailyKwh);
+      const monthlyCost = calculateCost(monthlyKwh);
+
+      const flagObj = TARIFF_FLAGS[consumer.flag] || TARIFF_FLAGS.verde;
+      const tariffBadge = document.getElementById('simAppliedTariffBadge');
+      const flagBadge = document.getElementById('simAppliedFlagBadge');
+      if (tariffBadge) {
+        tariffBadge.textContent = `R$ ${Number(consumer.tariffValue).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/kWh`;
+      }
+      if (flagBadge) {
+        flagBadge.textContent = flagObj.label;
+      }
+
+      document.getElementById('simResDailyKwh').textContent = dailyKwh.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById('simResMonthlyKwh').textContent = monthlyKwh.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById('simResDailyCost').textContent = formatBRL(dailyCost);
+      document.getElementById('simResMonthlyCost').textContent = formatBRL(monthlyCost);
+
+      renderSimulationList();
+    }
+
+    function addCurrentSimToList() {
+      const select = document.getElementById('simAppliancePreset');
+      const option = select.options[select.selectedIndex];
+      const baseName = option.getAttribute('data-name') || 'Aparelho';
+
+      const watts = Math.max(1, parseFloat(document.getElementById('simWatts').value) || 0);
+      const hours = Math.max(0.1, parseFloat(document.getElementById('simHoursPerDay').value) || 0);
+      const days = Math.max(1, parseInt(document.getElementById('simDaysPerMonth').value, 10) || 30);
+      const qty = Math.max(1, parseInt(document.getElementById('simQuantity').value, 10) || 1);
+
+      const monthlyKwh = ((watts * hours * qty) / 1000) * days;
+
+      simulationCart.push({
+        id: Date.now(),
+        name: baseName,
+        watts,
+        hours,
+        days,
+        qty,
+        monthlyKwh
+      });
+
+      renderSimulationList();
+      showToast(`${qty}x ${baseName} adicionado à lista de simulação!`);
+    }
+
+    function removeSimulationItem(id) {
+      simulationCart = simulationCart.filter(item => item.id !== id);
+      renderSimulationList();
+    }
+
+    function clearSimulationList() {
+      simulationCart = [];
+      renderSimulationList();
+      showToast('Lista de simulação limpa.');
+    }
+
+    function renderSimulationList() {
+      const container = document.getElementById('simListContainer');
+      if (!container) return;
+
+      if (!simulationCart.length) {
+        container.innerHTML = `<p class="text-xs text-slate-400 py-3 text-center">Nenhum aparelho adicionado ainda. Clique em "+ Adicionar à Lista de Simulação" acima para somar equipamentos.</p>`;
+        document.getElementById('simListTotalKwh').textContent = '0,00 kWh/mês';
+        document.getElementById('simListTotalCost').textContent = 'R$ 0,00/mês';
+        return;
+      }
+
+      let totalKwh = 0;
+      container.innerHTML = simulationCart.map(item => {
+        totalKwh += item.monthlyKwh;
+        const itemCost = calculateCost(item.monthlyKwh);
+        return `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl border border-slate-200 bg-slate-50/70 text-xs">
+            <div>
+              <strong class="text-slate-900">${item.qty}x ${item.name}</strong>
+              <span class="text-slate-500 ml-1">(${item.watts} W • ${item.hours}h/dia • ${item.days} dias)</span>
+            </div>
+            <div class="flex items-center justify-between sm:justify-end gap-4">
+              <span class="font-bold text-slate-800">${item.monthlyKwh.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kWh/mês</span>
+              <span class="font-extrabold text-emerald-700">R$ ${formatBRL(itemCost)}</span>
+              <button type="button" onclick="removeSimulationItem(${item.id})" class="text-red-600 hover:underline font-semibold cursor-pointer">
+                Remover
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const totalCost = calculateCost(totalKwh);
+      document.getElementById('simListTotalKwh').textContent = `${totalKwh.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kWh/mês`;
+      document.getElementById('simListTotalCost').textContent = `R$ ${formatBRL(totalCost)}/mês`;
+    }
+
+    // Inicialização ao carregar a página
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('regDate').value = new Date().toISOString().split('T')[0];
+      initBreakerTelemetry();
+      populateConsumerForm();
+      initChat();
+      updateAllUI();
+      recalculateSimpleSimulator();
+
+      // Restaura sessão caso o usuário já tenha entrado nesta sessão
+      try {
+        if (localStorage.getItem(STORAGE_KEYS.AUTH_SESSION) === 'active') {
+          enterMainApplication();
+        }
+      } catch (e) {}
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeSandbarMenu();
+      });
+    });
+  </script>
+</body>
+</html>
