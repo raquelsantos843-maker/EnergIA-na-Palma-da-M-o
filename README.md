@@ -5,6 +5,7 @@ O EnergIA é uma proposta de assistente inteligente que utiliza recursos de Inte
 
 O objetivo é permitir que o usuário acompanhe seu consumo, visualize estimativas de gastos e receba alertas preventivos, facilitando o planejamento financeiro e incentivando o uso consciente da energia.
 ## Experimente
+🌐 Acessar a aplicação: 
 
 
 
