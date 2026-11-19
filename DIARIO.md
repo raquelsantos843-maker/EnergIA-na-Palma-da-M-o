@@ -35,10 +35,15 @@ Com a ajuda do professor, conseguimos desenvolver a estrutura inicial da nossa a
 Foi adicionada uma aba de cadastro para permitir que o usuário informe seus dados e tenha acesso às funcionalidades do aplicativo.
 | | |
 |---|---| 
+<img width="1381" height="879" alt="tela de cadastro" src="https://github.com/user-attachments/assets/16207998-597d-4290-a696-38905ac397cd" />|
+
 
 ## 2ª alteração – Configuração tarifária e limite mensal planejado
 
 Foram adicionados os seguintes campos:
+| | |
+|---|---| 
+<img width="1235" height="186" alt="calculo de meta finaceira" src="https://github.com/user-attachments/assets/db6b884c-217a-4079-8c5b-14d060c57223" />|
 
 - Tarifa de energia (R$/kWh);
 - Bandeira tarifária vigente;
@@ -50,6 +55,9 @@ Também foi acrescentado um cálculo na área de meta financeira, permitindo est
 ## AULA 04 – Alterações na medição do consumo
 
 ## 1ª alteração – Simulação do consumo diário
+| | |
+|---|---| 
+<img width="1275" height="662" alt="Alterção medidor no disjuntor" src="https://github.com/user-attachments/assets/2632288a-1bc3-4c31-8476-335e0af06eb0" />|
 
 Inicialmente, tínhamos a ideia de medir o consumo diário por meio de um dispositivo instalado no disjuntor e conectado ao aplicativo.
 
@@ -58,6 +66,9 @@ Entretanto, como não será possível desenvolver essa integração neste moment
 ## 2ª alteração – Tela de cadastro
 
 Realizamos ajustes na tela de cadastro para melhorar a organização das informações e facilitar a utilização do aplicativo pelos usuários.
+| | |
+|---|---| 
+<img width="451" height="633" alt="Nova tela de cadastro" src="https://github.com/user-attachments/assets/ce587831-9599-4e62-9b4b-00a7733a6436" />|
 
 ## AULA 05 – Organização das funcionalidades
 
