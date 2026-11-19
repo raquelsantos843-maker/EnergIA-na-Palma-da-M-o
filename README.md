@@ -31,6 +31,7 @@ O projeto busca proporcionar maior autonomia às famílias, permitindo acompanha
 
 | | |
 |---|---|
-| 
+| <img width="1246" height="470" alt="image" src="https://github.com/user-attachments/assets/692a43de-9d05-4a09-8bea-af20f5343275" />
+
 
 
