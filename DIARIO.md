@@ -33,6 +33,8 @@ Com a ajuda do professor, conseguimos desenvolver a estrutura inicial da nossa a
 ## 1ª alteração – Criação da tela de cadastro
 
 Foi adicionada uma aba de cadastro para permitir que o usuário informe seus dados e tenha acesso às funcionalidades do aplicativo.
+| | |
+|---|---| 
 
 ## 2ª alteração – Configuração tarifária e limite mensal planejado
 
