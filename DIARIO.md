@@ -71,6 +71,10 @@ Realizamos ajustes na tela de cadastro para melhorar a organização das informa
 <img width="451" height="633" alt="Nova tela de cadastro" src="https://github.com/user-attachments/assets/ce587831-9599-4e62-9b4b-00a7733a6436" />|
 
 ## AULA 05 – Organização das funcionalidades
+| | |
+|---|---| 
+
+<img width="1235" height="954" alt="historico de registro do mês" src="https://github.com/user-attachments/assets/74f38228-f052-4439-b9fc-607e27a6dbef" />|
 
 Nesta aula, começamos a organizar melhor as funcionalidades do aplicativo. Analisamos as telas existentes e verificamos quais informações seriam necessárias para que o usuário pudesse acompanhar seu consumo de energia.
 
