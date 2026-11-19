@@ -22,17 +22,17 @@ O grupo iniciou as atividades analisando o documento do projeto de pesquisa. Ap�
 
 ## AULA 02 – Planejamento da aplicação
 
-Nesta aula, começamos a analisar como seria possível colocar em prática a medição do consumo de energia em tempo real. Discutimos a possibilidade de utilizar um dispositivo conectado ao disjuntor para enviar informações diretamente ao aplicativo.
+Nesta aula, começamos a analisar como seria possível colocar em prática a medição do consumo de energia em tempo real. Discutimos a possibilidade de utilizar um dispositivo conectado ao disjuntor para enviar informações diretamente ao aplicação.
 
 Também avaliamos as dificuldades técnicas e financeiras para desenvolver essa ideia e discutimos se seria possível continuar com a proposta inicial.
 
-## AULA 03 – Desenvolvimento da estrutura inicial do aplicativo
+## AULA 03 – Desenvolvimento da estrutura inicial do aplicação
 
 Com a ajuda do professor, conseguimos desenvolver a estrutura inicial da nossa aplicação. Durante essa etapa, realizamos algumas alterações para melhorar o funcionamento e a organização do aplicativo.
 
 ## 1ª alteração – Criação da tela de cadastro
 
-Foi adicionada uma aba de cadastro para permitir que o usuário informe seus dados e tenha acesso às funcionalidades do aplicativo.
+Foi adicionada uma aba de cadastro para permitir que o usuário informe seus dados e tenha acesso às funcionalidades do aplicação.
 | | |
 |---|---| 
 <img width="1381" height="879" alt="tela de cadastro" src="https://github.com/user-attachments/assets/16207998-597d-4290-a696-38905ac397cd" />|
@@ -59,13 +59,13 @@ Também foi acrescentado um cálculo na área de meta financeira, permitindo est
 |---|---| 
 <img width="1275" height="662" alt="Alterção medidor no disjuntor" src="https://github.com/user-attachments/assets/2632288a-1bc3-4c31-8476-335e0af06eb0" />|
 
-Inicialmente, tínhamos a ideia de medir o consumo diário por meio de um dispositivo instalado no disjuntor e conectado ao aplicativo.
+Inicialmente, tínhamos a ideia de medir o consumo diário por meio de um dispositivo instalado no disjuntor e conectado ao aplicação.
 
 Entretanto, como não será possível desenvolver essa integração neste momento, decidimos trabalhar com dados simulados. Dessa forma, criamos a proposta de uma barra de progresso que aumenta conforme o consumo diário informado ou simulado pelo sistema.
 
 ## 2ª alteração – Tela de cadastro
 
-Realizamos ajustes na tela de cadastro para melhorar a organização das informações e facilitar a utilização do aplicativo pelos usuários.
+Realizamos ajustes na tela de cadastro para melhorar a organização das informações e facilitar a utilização da aplicação pelos usuários.
 | | |
 |---|---| 
 <img width="451" height="633" alt="Nova tela de cadastro" src="https://github.com/user-attachments/assets/ce587831-9599-4e62-9b4b-00a7733a6436" />|
@@ -75,7 +75,7 @@ Realizamos ajustes na tela de cadastro para melhorar a organização das informa
 |---|---| 
 <img width="1235" height="954" alt="historico de registro do mês" src="https://github.com/user-attachments/assets/74f38228-f052-4439-b9fc-607e27a6dbef" />|
 
-Nesta aula, começamos a organizar melhor as funcionalidades do aplicativo. Analisamos as telas existentes e verificamos quais informações seriam necessárias para que o usuário pudesse acompanhar seu consumo de energia.
+Nesta aula, começamos a organizar melhor as funcionalidades do aplicação. Analisamos as telas existentes e verificamos quais informações seriam necessárias para que o usuário pudesse acompanhar seu consumo de energia.
 
 Também discutimos melhorias na apresentação dos dados, buscando deixar o aplicativo mais simples e fácil de utilizar.
 
