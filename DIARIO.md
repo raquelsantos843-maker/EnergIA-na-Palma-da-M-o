@@ -73,9 +73,25 @@ Realizamos ajustes na tela de cadastro para melhorar a organização das informa
 ## AULA 05 – Organização das funcionalidades
 | | |
 |---|---| 
-<img width="1235" height="954" alt="historico de registro do mês" src="https://github.com/user-attachments/assets/74f38228-f052-4439-b9fc-607e27a6dbef" />|
+<img width="1235" height="954" alt="historico de registro do mês" src="https://github.com/user-attachments/assets/74f38228-f052-4439-b9fc-607e27a6dbef" 
 
 Nesta aula, começamos a organizar melhor as funcionalidades do aplicação. Analisamos as telas existentes e verificamos quais informações seriam necessárias para que o usuário pudesse acompanhar seu consumo de energia.
 
 Também discutimos melhorias na apresentação dos dados, buscando deixar o aplicativo mais simples e fácil de utilizar.
+
+## AULA 07 - NOVAS ATUALIZAÇÕES NA APLICAÇÃO
+
+No dia 22/11 foi feita uma atualização diretamente no código, na parte de cadastro foi trabalhado o login, recuperação de senha e acesso fácil na hora de entrar no sistema 
+
+Ajustamos a ideia de permitir o cadastro de novos usuários e verificar se as informações estão cadastradas, para evitar contas duplicadas.
+
+Está sendo melhorado a tela de login. Queremos que apareçam mensagens no canto superior direito quando o CPF estiver incorreto, senha errada e unidade consumidora não corresponder aos dados da conta.
+
+Também definimos como será o caminho do usuário dentro da aplicação: quem fizer o login corretamente vai direto para a página inicial. Já quem criar uma conta nova será direcionado para a página de Cadastro do Consumidor, com o aviso “Termine seu cadastro!” em destaque.
+
+Além disso, continuamos mantendo a organização das principais partes do projeto, como cadastro, login, recuperação de senha, consulta de consumo de energia e a proposta de utilização do Machine Learning.
+
+*Também foi feito correções no relatório para entrega na quarta-feira. 
+
+
 
