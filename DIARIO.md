@@ -93,5 +93,18 @@ Além disso, continuamos mantendo a organização das principais partes do proje
 
 *Também foi feito correções no relatório para entrega na quarta-feira. 
 
+Atualização da execução da aplicação 
+Sábado dia 20/11/2026 
 
+Integrante Sílvia 
 
+Trabalhou na melhoria da aplicação, na parte de cadastro e Login do usuário, na qual estava dando bugs ao logar. Foi verificado também e feito os ajustes no cadastro de novos usuários e informações já cadastradas, evitado assim duplicidades. 
+Os ajuste seguem sendo feitos e sendo acrescentadas novas funcionalidades para que apareça mensagem no canto direito quando o CPF estiver incorreto, usuário não cadastrado, senha estiver errada, ou quando a unidade consumidora não corresponder aos dados da conta.  
+Também foi definido como será o caminho do usuário dentro da aplicação, por exemplo ao fazer o Login corretamente que el e seja encaminhado para a página de Cadastro do Consumidor, com o aviso “Termine seu cadastro!” em destaque.
+
+Além disso, foi mantida a organização das principais partes do projeto, como cadastro, login, recuperação de senha, consulta de consumo de energia e a proposta de utilização do Machine Learning.
+
+Algumas dessas melhorias já foram trabalhadas, mas as últimas alterações na validação do login ainda precisam ser aplicadas ao arquivo.
+
+Resumindo, no sábado o foco foi a melhora da organização do acesso à aplicação e deixar a experiência do usuário mais simples e intuitiva, evitando bugs e erros. 
+A tela inicial ainda precisa de refinamento, as melhorias seguem sendo feitas. 
