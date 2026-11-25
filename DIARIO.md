@@ -107,4 +107,12 @@ Além disso, foi mantida a organização das principais partes do projeto, como 
 Algumas dessas melhorias já foram trabalhadas, mas as últimas alterações na validação do login ainda precisam ser aplicadas ao arquivo.
 
 Resumindo, no sábado o foco foi a melhora da organização do acesso à aplicação e deixar a experiência do usuário mais simples e intuitiva, evitando bugs e erros. 
-A tela inicial ainda precisa de refinamento, as melhorias seguem sendo feitas. 
+A tela inicial ainda precisa de refinamento, as melhorias seguem sendo feitas.
+
+# Aula 08
+
+Foi feito alterações na página inicial da aplicação, como simulador de monitoramento diário que ganhou uma atualização automática de 1h e botao de adicionar +1h e um gráfico de meta mensal.
+
+| | |
+|---|---| 
+<img width="963" height="1031" alt="image" src="https://github.com/user-attachments/assets/378b4b48-d910-4811-b181-3c5097fe0c1b" />|
