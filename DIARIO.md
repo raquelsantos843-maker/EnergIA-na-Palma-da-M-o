@@ -116,3 +116,9 @@ Foi feito alterações na página inicial da aplicação, como simulador de moni
 | | |
 |---|---| 
 <img width="963" height="1031" alt="image" src="https://github.com/user-attachments/assets/378b4b48-d910-4811-b181-3c5097fe0c1b" />|
+
+# Aula 09
+
+Foi feito uma melhoria no gráfico de meta mensal que não estava salvando as minhas metas do dia anterior quando eu editava o dia atual.
+
+E estamos nos organizando e separando o que cada integrante irá apresentar no auditório.
